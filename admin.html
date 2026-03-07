@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervision Admin - Élection Municipale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f4ebfa',
+              100: '#e9d7f5',
+              200: '#d4afea',
+              300: '#be87e0',
+              400: '#a35ad1',
+              500: '#7914ce',
+              600: '#6410ab',
+              700: '#4d0c83',
+              800: '#36095c',
+              900: '#200537',
+            }
+          }
+        }
+      }
+    }
+  </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-gray-800 p-4 md:p-8">
+
+    <!-- Container de Login -->
+    <div id="login-container" class="flex flex-col items-center justify-center min-h-[80vh] fade-in">
+        <div class="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl">
+            <div class="mb-6 text-center">
+                <h1 class="text-2xl font-bold text-gray-800">Accès Superviseur</h1>
+                <p class="text-sm text-gray-500 mt-1">Élection Municipale 2026</p>
+            </div>
+
+            <div id="login-alert" class="hidden p-4 mb-4 text-sm font-medium text-red-800 bg-red-100 rounded-lg"></div>
+
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="password" class="block mb-2 text-sm font-medium text-gray-700">Mot de passe
+                        Administrateur</label>
+                    <input type="password" id="password" required
+                        class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
+                </div>
+                <button type="submit" id="btn-login"
+                    class="w-full px-5 py-3 text-base font-semibold text-white transition-colors bg-brand-500 rounded-lg hover:bg-brand-600 focus:ring-4 focus:ring-brand-300">
+                    Connexion
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Container (Caché par défaut) -->
+    <div id="dashboard-container" class="hidden max-w-5xl mx-auto fade-in">
+        <div class="flex flex-col items-start justify-between mb-6 md:flex-row md:items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Tableau de Bord</h1>
+                <p class="text-gray-500 mt-1">Supervision en temps réel des résultats</p>
+            </div>
+            <button id="btn-refresh"
+                class="px-4 py-2 mt-4 md:mt-0 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-slate-200 transition">
+                Actualiser les données
+            </button>
+        </div>
+
+        <!-- Onglets Navigation -->
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+                <button id="nav-resultats"
+                    class="border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    Résultats
+                </button>
+                <button id="nav-bureaux"
+                    class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    Gestion des Bureaux
+                </button>
+                <button id="nav-candidats"
+                    class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    Candidats & Couleurs
+                </button>
+            </nav>
+        </div>
+
+        <div id="dashboard-alert" class="hidden p-4 mb-6 text-sm font-medium text-red-800 bg-red-100 rounded-lg"></div>
+
+        <!-- ONGLET RESULTATS -->
+        <div id="tab-resultats" class="block">
+
+            <!-- En-tête avec filtre par bureau -->
+            <div
+                class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+                <h2 class="text-xl font-bold text-gray-800">Visualisation des Résultats</h2>
+                <div class="flex items-center gap-3">
+                    <label for="filter-bureau" class="text-sm font-medium text-gray-600">Filtrer par bureau :</label>
+                    <select id="filter-bureau"
+                        class="p-2 text-sm border-gray-300 rounded-lg shadow-sm bg-white focus:ring-brand-500 focus:border-brand-500 min-w-[200px]">
+                        <option value="global">Global (Tous les bureaux)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- KPIs Dynamiques Candidats -->
+            <div id="candidats-kpi-container" class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-3">
+                <!-- Généré en javascript -->
+            </div>
+
+            <!-- Participation, Inscrits, Abstention, Blancs/Nuls -->
+            <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-5">
+                <div class="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-medium text-gray-500">Inscrits (Total)</h3>
+                    <p class="mt-2 text-3xl font-bold text-slate-800" id="stat-inscrits">-</p>
+                </div>
+                <div class="p-6 bg-white rounded-2xl shadow-sm border border-gray-100 bg-red-50">
+                    <h3 class="text-sm font-medium text-red-600">Abstention</h3>
+                    <div class="flex items-baseline mt-2 text-3xl font-bold text-red-700">
+                        <span id="stat-abstention">-</span>
+                    </div>
+                    <p class="text-xs text-red-500 mt-1 font-medium" id="stat-abstention-pct"></p>
+                </div>
+                <div class="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-medium text-gray-500">Participation</h3>
+                    <div class="flex items-baseline mt-2 text-3xl font-bold text-slate-800">
+                        <span id="stat-participation">-</span>
+                        <span class="ml-1 text-2xl font-semibold text-gray-400">%</span>
+                    </div>
+                </div>
+                <div class="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-medium text-gray-500">Blancs</h3>
+                    <p class="mt-2 text-3xl font-bold text-slate-800" id="stat-blancs">-</p>
+                </div>
+                <div class="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-medium text-gray-500">Nuls</h3>
+                    <p class="mt-2 text-3xl font-bold text-slate-800" id="stat-nuls">-</p>
+                </div>
+            </div>
+
+            <!-- Liste des bureaux -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-800">État des remontées par bureau</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white">
+                                    Nom du Bureau</th>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white text-right">
+                                    Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bureaux-list" class="divide-y divide-gray-100">
+                            <!-- Rendu dynamique via JS -->
+                            <tr>
+                                <td colspan="2" class="px-6 py-8 text-center text-gray-500">Chargement des données...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- Fin ONGLET RESULTATS -->
+
+        <!-- ONGLET BUREAUX -->
+        <div id="tab-bureaux" class="hidden">
+            <!-- Formulaire d'ajout -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Ajouter un nouveau bureau</h3>
+                <form id="add-bureau-form" class="flex flex-col md:flex-row gap-4 items-end">
+                    <div class="flex-grow">
+                        <label for="new-nom" class="block mb-2 text-sm font-medium text-gray-700">Nom du bureau</label>
+                        <input type="text" id="new-nom" required
+                            class="w-full p-3 border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label for="new-pin" class="block mb-2 text-sm font-medium text-gray-700">Code PIN (4
+                            chiffres)</label>
+                        <input type="text" id="new-pin" maxlength="4" pattern="[0-9]{4}" required
+                            class="w-full p-3 border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500 text-center w-32">
+                    </div>
+                    <div>
+                        <label for="new-inscrits" class="block mb-2 text-sm font-medium text-gray-700">Inscrits</label>
+                        <input type="number" id="new-inscrits" required min="0" value="0"
+                            class="w-full p-3 border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500 text-center w-32">
+                    </div>
+                    <button type="submit" id="btn-add-bureau"
+                        class="px-5 py-3 text-sm font-semibold text-white bg-brand-500 rounded-lg hover:bg-brand-600">
+                        Ajouter
+                    </button>
+                    <button type="button" id="btn-cancel-edit-bureau"
+                        class="hidden px-5 py-3 text-sm font-semibold text-slate-800 bg-gray-200 rounded-lg hover:bg-gray-300">
+                        Annuler
+                    </button>
+                    <input type="hidden" id="edit-bureau-id">
+                </form>
+            </div>
+
+            <!-- Liste des bureaux gérés -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-800">Bureaux configurés</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white">
+                                    Nom du Bureau</th>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white">
+                                    PIN</th>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white">
+                                    Inscrits</th>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white text-right">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manage-bureaux-list" class="divide-y divide-gray-100">
+                            <!-- Rendu dynamique via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- Fin ONGLET BUREAUX -->
+
+        <!-- ONGLET CANDIDATS -->
+        <div id="tab-candidats" class="hidden">
+            <!-- Formulaire d'ajout Candidat -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Ajouter un nouveau candidat</h3>
+                <form id="add-candidat-form" class="flex flex-col md:flex-row gap-4 items-end">
+                    <div class="flex-grow">
+                        <label for="new-candidat-nom" class="block mb-2 text-sm font-medium text-gray-700">Nom du
+                            Candidat / Liste</label>
+                        <input type="text" id="new-candidat-nom" required
+                            class="w-full p-3 border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
+                    </div>
+                    <div>
+                        <label for="new-candidat-couleur" class="block mb-2 text-sm font-medium text-gray-700">Couleur
+                            d'affichage</label>
+                        <input type="color" id="new-candidat-couleur" value="#3b82f6" required
+                            class="w-full h-12 p-1 border-gray-300 rounded-lg shadow-sm cursor-pointer">
+                    </div>
+                    <button type="submit" id="btn-add-candidat"
+                        class="px-5 py-3 text-sm font-semibold text-white bg-brand-500 rounded-lg hover:bg-brand-600">
+                        Ajouter
+                    </button>
+                </form>
+            </div>
+
+            <!-- Liste des candidats -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-800">Candidats configurés</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white w-16">
+                                    Couleur</th>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white">
+                                    Nom</th>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white text-right">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manage-candidats-list" class="divide-y divide-gray-100">
+                            <!-- Rendu dynamique via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- Fin ONGLET CANDIDATS -->
+
+    </div>
+
+    <script>
+        const loginContainer = document.getElementById('login-container');
+        const dashboardContainer = document.getElementById('dashboard-container');
+        const loginForm = document.getElementById('login-form');
+        const btnLogin = document.getElementById('btn-login');
+        const btnRefresh = document.getElementById('btn-refresh');
+
+        // Tabs
+        const navResultats = document.getElementById('nav-resultats');
+        const navBureaux = document.getElementById('nav-bureaux');
+        const navCandidats = document.getElementById('nav-candidats');
+        const tabResultats = document.getElementById('tab-resultats');
+        const tabBureaux = document.getElementById('tab-bureaux');
+        const tabCandidats = document.getElementById('tab-candidats');
+
+        // Manage Bureaux & Candidats
+        const addBureauForm = document.getElementById('add-bureau-form');
+        const manageBureauxList = document.getElementById('manage-bureaux-list');
+        const addCandidatForm = document.getElementById('add-candidat-form');
+        const manageCandidatsList = document.getElementById('manage-candidats-list');
+
+        // Filter
+        const filterBureau = document.getElementById('filter-bureau');
+
+        let authToken = null;
+        let allBureaux = [];
+        let currentStatsData = null; // Stocke les stats complètes pour le filtrage côté client
+        let currentPollingInterval = null;
+
+        function switchTab(tab) {
+            const activeNavClass = "border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm";
+            const inactiveNavClass = "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm";
+
+            navResultats.className = tab === 'resultats' ? activeNavClass : inactiveNavClass;
+            navBureaux.className = tab === 'bureaux' ? activeNavClass : inactiveNavClass;
+            navCandidats.className = tab === 'candidats' ? activeNavClass : inactiveNavClass;
+
+            tabResultats.classList.toggle('hidden', tab !== 'resultats');
+            tabBureaux.classList.toggle('hidden', tab !== 'bureaux');
+            tabCandidats.classList.toggle('hidden', tab !== 'candidats');
+        }
+
+        navResultats.addEventListener('click', () => switchTab('resultats'));
+        navBureaux.addEventListener('click', () => switchTab('bureaux'));
+        navCandidats.addEventListener('click', () => switchTab('candidats'));
+
+        function renderBureaux(bureaux) {
+            allBureaux = bureaux;
+            const tbody = document.getElementById('bureaux-list');
+            tbody.innerHTML = '';
+            manageBureauxList.innerHTML = '';
+
+            // Mettre à jour le select de filtre (garder la valeur sélectionnée)
+            const currentFilterValue = filterBureau.value;
+            filterBureau.innerHTML = '<option value="global">Global (Tous les bureaux)</option>';
+
+            if (!bureaux || bureaux.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="px-6 py-8 text-center text-gray-500">Aucun bureau trouvé.</td></tr>';
+                manageBureauxList.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">Aucun bureau trouvé.</td></tr>';
+                return;
+            }
+
+            bureaux.forEach(bureau => {
+                // Ajout au filtre (seulement s'il a voté pour voir ses stats)
+                if (bureau.a_vote) {
+                    const option = document.createElement('option');
+                    option.value = bureau.nom;
+                    option.textContent = bureau.nom;
+                    filterBureau.appendChild(option);
+                }
+
+                // Rendu Resultats
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 transition-colors';
+                const statusClass = bureau.a_vote ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-50 text-red-700 border-red-200';
+                const statusText = bureau.a_vote ? 'Transmis' : 'En attente';
+
+                tr.innerHTML = `
+                  <td class="px-6 py-4 text-sm font-medium text-gray-900">${bureau.nom}</td>
+                  <td class="px-6 py-4 text-right">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusClass}">
+                      ${statusText}
+                    </span>
+                  </td>
+                `;
+                tbody.appendChild(tr);
+
+                // Rendu Manage Bureaux
+                const trManage = document.createElement('tr');
+                let actionsHtml = `<button onclick="editBureau('${bureau.id}', '${bureau.nom.replace(/'/g, "\\'")}', '${bureau.pin}', ${bureau.inscrits || 0})" class="text-blue-500 hover:text-blue-700 text-sm font-medium mr-4">Modifier</button>`;
+                actionsHtml += `<button onclick="deleteBureau('${bureau.id}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Supprimer</button>`;
+                if (bureau.a_vote) {
+                    actionsHtml = `<button onclick="resetBureau('${bureau.id}')" class="text-orange-500 hover:text-orange-700 text-sm font-medium mr-4">Réinitialiser</button>` + actionsHtml;
+                }
+
+                trManage.innerHTML = `
+                  <td class="px-6 py-4 text-sm text-gray-900">${bureau.nom}</td>
+                  <td class="px-6 py-4 text-sm text-gray-500 font-mono tracking-widest">${bureau.pin}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">${bureau.inscrits || 0}</td>
+                  <td class="px-6 py-4 text-right">
+                      ${actionsHtml}
+                  </td>
+                `;
+                manageBureauxList.appendChild(trManage);
+            });
+
+            // Restauration de la sélection
+            if (Array.from(filterBureau.options).some(opt => opt.value === currentFilterValue)) {
+                filterBureau.value = currentFilterValue;
+            }
+        }
+
+        // Écouteur de changement de filtre
+        filterBureau.addEventListener('change', () => {
+            if (currentStatsData) {
+                renderStats(currentStatsData);
+            }
+        });
+
+        function renderStats(statsData) {
+            currentStatsData = statsData;
+
+            // Déterminer quelles stats afficher (global ou un bureau précis)
+            const selectedBureau = filterBureau.value;
+            let stats = statsData.global;
+
+            if (selectedBureau !== 'global' && statsData.parBureau[selectedBureau]) {
+                stats = statsData.parBureau[selectedBureau];
+            }
+
+            document.getElementById('stat-participation').textContent = stats.participation;
+            document.getElementById('stat-blancs').textContent = (stats.totalBlancs || 0).toLocaleString('fr-FR');
+            document.getElementById('stat-nuls').textContent = (stats.totalNuls || 0).toLocaleString('fr-FR');
+
+            document.getElementById('stat-inscrits').textContent = (stats.totalInscritsGlobals || 0).toLocaleString('fr-FR');
+
+            // Calcul de l'abstention (Inscrits Globaux remontés - Total Votants)
+            const inscrits = stats.totalInscritsGlobals || 0;
+            const votants = stats.totalVotants || 0;
+            const abstention = inscrits - votants;
+            const abstentionPct = inscrits > 0 ? ((abstention / inscrits) * 100).toFixed(2) : 0;
+
+            document.getElementById('stat-abstention').textContent = abstention > 0 ? abstention.toLocaleString('fr-FR') : '-';
+            document.getElementById('stat-abstention-pct').textContent = abstention > 0 ? `${abstentionPct}% des inscrits` : '';
+
+            const container = document.getElementById('candidats-kpi-container');
+            container.innerHTML = '';
+
+            // Total des suffrages exprimés dynamiques (Votants - Blancs - Nuls)
+            const exprimes = votants - (stats.totalBlancs || 0) - (stats.totalNuls || 0);
+
+            if (!stats.candidats || stats.candidats.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 mt-4">Aucun candidat configuré.</p>';
+                return;
+            }
+
+            stats.candidats.forEach(c => {
+                const pourcentageStr = exprimes > 0 ? ((c.voix / exprimes) * 100).toFixed(1) : '0';
+
+                // On crée une carte avec une barre de progression animée
+                const card = document.createElement('div');
+                card.className = "p-6 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between";
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <span class="w-4 h-4 rounded-full" style="background-color: ${c.couleur};"></span>
+                            <h3 class="text-sm font-medium text-gray-600 leading-tight">${c.nom}</h3>
+                        </div>
+                        <div class="flex items-baseline mt-4 mb-2 text-4xl font-bold text-slate-800">
+                            ${c.voix.toLocaleString('fr-FR')} <span class="text-sm font-normal text-gray-500 ml-2">voix</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-gray-500 font-medium mb-1">
+                            <span>Score</span>
+                            <span>${pourcentageStr}%</span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                            <div class="h-2.5 rounded-full transition-all duration-1000 ease-out" style="width: 0%; background-color: ${c.couleur};" data-target-width="${pourcentageStr}%"></div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Trigger reflow pour l'animation des barres
+            setTimeout(() => {
+                document.querySelectorAll('#candidats-kpi-container .transition-all').forEach(bar => {
+                    bar.style.width = bar.getAttribute('data-target-width');
+                });
+            }, 50);
+
+            // Gérer le DOM des candidats dans l'onglet Manage Candidats
+            // Attention : Toujours utiliser les stats globales pour la vraie liste des candidats enregistrés !
+            renderManageCandidats(statsData.global.candidats);
+        }
+
+        function renderManageCandidats(candidats) {
+            manageCandidatsList.innerHTML = '';
+            if (!candidats || candidats.length === 0) {
+                manageCandidatsList.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">Aucun candidat.</td></tr>';
+                return;
+            }
+            candidats.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                  <td class="px-6 py-4"><span class="block w-6 h-6 rounded border border-gray-200" style="background-color: ${c.couleur}"></span></td>
+                  <td class="px-6 py-4 text-sm font-medium text-gray-900">${c.nom}</td>
+                  <td class="px-6 py-4 text-right">
+                      <button onclick="deleteCandidat('${c.id}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Supprimer</button>
+                  </td>
+                `;
+                manageCandidatsList.appendChild(tr);
+            });
+        }
+
+        async function fetchAdminData(silent = false) {
+            if (!silent) {
+                const alertBox = document.getElementById('dashboard-alert');
+                alertBox.classList.add('hidden');
+                btnRefresh.disabled = true;
+                btnRefresh.textContent = 'Actualisation...';
+            }
+
+            try {
+                const res = await fetch('/.netlify/functions/get-stats', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                renderStats(data.stats);
+                renderBureaux(data.bureaux);
+            } catch (err) {
+                if (!silent) alert(err.message);
+            } finally {
+                if (!silent) {
+                    btnRefresh.disabled = false;
+                    btnRefresh.textContent = 'Actualiser les données';
+                }
+            }
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const alertBox = document.getElementById('login-alert');
+            alertBox.classList.add('hidden');
+
+            btnLogin.disabled = true;
+            btnLogin.textContent = 'Connexion...';
+
+            try {
+                const res = await fetch('/.netlify/functions/get-stats', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${password}` }
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                authToken = password;
+                loginContainer.classList.add('hidden');
+                dashboardContainer.classList.remove('hidden');
+
+                // Lancement de la première récupération
+                await fetchAdminData(false);
+
+                // Setup du Polling automatique (toutes les 10 secondes)
+                if (currentPollingInterval) clearInterval(currentPollingInterval);
+                currentPollingInterval = setInterval(() => {
+                    if (authToken && tabResultats.classList.contains('block') || !tabResultats.classList.contains('hidden')) {
+                        fetchAdminData(true); // silent fetch
+                    }
+                }, 10000);
+
+            } catch (err) {
+                alertBox.textContent = err.message;
+                alertBox.classList.remove('hidden');
+            } finally {
+                btnLogin.disabled = false;
+                btnLogin.textContent = 'Connexion';
+            }
+        });
+
+        btnRefresh.addEventListener('click', () => {
+            if (authToken) fetchAdminData();
+        });
+
+        addBureauForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nom = document.getElementById('new-nom').value;
+            const pin = document.getElementById('new-pin').value;
+            const inscrits = document.getElementById('new-inscrits').value;
+            const bureauId = document.getElementById('edit-bureau-id').value;
+            const btn = document.getElementById('btn-add-bureau');
+            const isEditing = !!bureauId;
+            btn.disabled = true;
+
+            try {
+                const url = '/.netlify/functions/manage-bureaux';
+                const options = {
+                    method: isEditing ? 'PUT' : 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(isEditing ? { action: 'edit', id: bureauId, nom, pin, inscrits } : { nom, pin, inscrits })
+                };
+
+                const res = await fetch(url, options);
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                resetBureauForm();
+                fetchAdminData();
+                alert(isEditing ? 'Bureau modifié avec succès' : 'Bureau ajouté avec succès');
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('btn-cancel-edit-bureau').addEventListener('click', resetBureauForm);
+
+        function resetBureauForm() {
+            document.getElementById('new-nom').value = '';
+            document.getElementById('new-pin').value = '';
+            document.getElementById('new-inscrits').value = '0';
+            document.getElementById('edit-bureau-id').value = '';
+            document.getElementById('btn-add-bureau').textContent = 'Ajouter';
+            document.getElementById('btn-cancel-edit-bureau').classList.add('hidden');
+        }
+
+        function editBureau(id, nom, pin, inscrits) {
+            document.getElementById('edit-bureau-id').value = id;
+            document.getElementById('new-nom').value = nom;
+            document.getElementById('new-pin').value = pin;
+            document.getElementById('new-inscrits').value = inscrits;
+            document.getElementById('btn-add-bureau').textContent = 'Modifier';
+            document.getElementById('btn-cancel-edit-bureau').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteBureau(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce bureau ?')) return;
+            try {
+                const res = await fetch('/.netlify/functions/manage-bureaux', {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                fetchAdminData(false);
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function resetBureau(id) {
+            if (!confirm('Êtes-vous sûr de vouloir réinitialiser ce bureau ? Les résultats associés seront DÉFINITIVEMENT supprimés.')) return;
+            try {
+                const res = await fetch('/.netlify/functions/manage-bureaux', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action: 'reset', id })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                fetchAdminData(false);
+                alert('Le bureau a été réinitialisé avec succès.');
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        addCandidatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nom = document.getElementById('new-candidat-nom').value;
+            const couleur = document.getElementById('new-candidat-couleur').value;
+            const btn = document.getElementById('btn-add-candidat');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/.netlify/functions/manage-candidats', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nom, couleur })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                document.getElementById('new-candidat-nom').value = '';
+                fetchAdminData(false); // force refresh
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        async function deleteCandidat(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce candidat ? (Cela supprimera DEFINITIVEMENT tous ses votes associés)')) return;
+            try {
+                const res = await fetch('/.netlify/functions/manage-candidats', {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                fetchAdminData(false);
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

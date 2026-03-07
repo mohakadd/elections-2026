@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saisie des Résultats - Élection Municipale</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f4ebfa',
+              100: '#e9d7f5',
+              200: '#d4afea',
+              300: '#be87e0',
+              400: '#a35ad1',
+              500: '#7914ce',
+              600: '#6410ab',
+              700: '#4d0c83',
+              800: '#36095c',
+              900: '#200537',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen p-4 relative">
+
+  <!-- Bouton d'Administration -->
+  <div class="absolute top-4 right-4 md:top-6 md:right-6 fade-in">
+    <a href="/admin.html"
+      class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 hover:text-slate-900 transition-all focus:outline-none focus:ring-2 focus:ring-slate-300">
+      <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+        </path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+        </path>
+      </svg>
+      Administration
+    </a>
+  </div>
+
+  <div class="w-full max-w-xl p-8 bg-white rounded-2xl shadow-xl fade-in mt-12 md:mt-0" id="app-container">
+    <div class="mb-8 text-center">
+      <h1 class="text-3xl font-bold text-gray-800">Élection Municipale 2026</h1>
+      <p class="mt-2 text-gray-500">Portail de saisie des résultats</p>
+    </div>
+
+    <!-- Alert Message -->
+    <div id="alert-box" class="hidden p-4 mb-6 rounded-lg text-sm font-medium"></div>
+
+    <!-- Section 1 : Connexion -->
+    <form id="login-form" class="space-y-6">
+      <div>
+        <label for="bureau" class="block mb-2 text-sm font-medium text-gray-700">Nom du Bureau</label>
+        <select id="bureau" name="bureau" required
+          class="w-full p-4 text-base border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500">
+          <option value="" disabled selected>Chargement des bureaux...</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="pin" class="block mb-2 text-sm font-medium text-gray-700">Code PIN (4 chiffres)</label>
+        <input type="password" id="pin" name="pin" maxlength="4" pattern="[0-9]{4}" required inputmode="numeric"
+          placeholder="••••"
+          class="w-full p-4 text-center text-2xl tracking-[0.5em] border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+
+      <button type="submit" id="btn-login"
+        class="w-full px-5 py-4 text-base font-semibold text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
+        Authentification
+      </button>
+    </form>
+
+    <!-- Section 2 : Saisie des résultats (Cachée par défaut) -->
+    <form id="vote-form" class="hidden space-y-6">
+      <div class="p-4 mb-6 bg-brand-50 rounded-lg">
+        <p class="text-sm font-semibold text-brand-800">Connecté en tant que : <span id="bureau-name-display"
+            class="font-bold"></span></p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div>
+          <label for="inscrits" class="block mb-2 text-sm font-medium text-gray-700">Total des émargements
+            (Votants)</label>
+          <input type="number" id="inscrits" required min="1"
+            class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
+        </div>
+        <div>
+          <label for="blancs" class="block mb-2 text-sm font-medium text-gray-700">Blancs</label>
+          <input type="number" id="blancs" value="0" required min="0"
+            class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
+        </div>
+        <div>
+          <label for="nuls" class="block mb-2 text-sm font-medium text-gray-700">Nuls</label>
+          <input type="number" id="nuls" value="0" required min="0"
+            class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
+        </div>
+      </div>
+
+      <hr class="my-6 border-gray-200">
+
+      <div class="space-y-4">
+        <h3 class="text-lg font-medium text-gray-800">Candidats</h3>
+        <!-- Inputs dynamiques injectés ici -->
+        <div id="candidats-container" class="space-y-4"></div>
+      </div>
+
+      <!-- Contrôle de cohérence -->
+      <div id="coherence-banner"
+        class="p-4 mt-6 text-sm font-medium text-center text-red-800 bg-red-100 rounded-lg fade-in transition-colors">
+        <p id="coherence-text">En attente de saisie...</p>
+      </div>
+
+      <button type="submit" id="btn-submit"
+        class="w-full px-5 py-4 text-lg font-semibold text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300">
+        Transmettre les résultats définitifs
+      </button>
+      <p class="text-xs text-center text-gray-500">Attention : Cette action est définitive et ne peut être effectuée
+        qu'une seule fois.</p>
+    </form>
+
+    <!-- Section 3 : Succès (Cachée par défaut) -->
+    <div id="success-section"
+      class="flex-col items-center justify-center hidden pt-8 pb-4 text-center space-y-4 fade-in">
+      <div class="flex items-center justify-center w-20 h-20 bg-green-100 rounded-full">
+        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-800">Résultats transmis !</h2>
+      <p class="text-gray-600">Merci, les résultats de votre bureau ont bien été enregistrés de manière sécurisée.</p>
+    </div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('login-form');
+    const voteForm = document.getElementById('vote-form');
+    const successSection = document.getElementById('success-section');
+    const alertBox = document.getElementById('alert-box');
+    const bureauNameDisplay = document.getElementById('bureau-name-display');
+    const bureauSelect = document.getElementById('bureau');
+    const candidatsContainer = document.getElementById('candidats-container');
+    const coherenceBanner = document.getElementById('coherence-banner');
+    const coherenceText = document.getElementById('coherence-text');
+    const btnSubmit = document.getElementById('btn-submit');
+
+    let currentSession = null;
+    let listeCandidats = [];
+
+    // Charger les bureaux et candidats dynamiquement
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const [resBureaux, resCandidats] = await Promise.all([
+          fetch('/.netlify/functions/get-bureaux'),
+          fetch('/.netlify/functions/get-candidats')
+        ]);
+
+        const dataBureaux = await resBureaux.json();
+        const dataCandidats = await resCandidats.json();
+
+        bureauSelect.innerHTML = '<option value="" disabled selected>Sélectionnez votre bureau</option>';
+        if (dataBureaux.bureaux && dataBureaux.bureaux.length > 0) {
+          dataBureaux.bureaux.forEach(b => {
+            const option = document.createElement('option');
+            option.value = b.nom;
+            option.textContent = b.nom;
+            bureauSelect.appendChild(option);
+          });
+        } else {
+          bureauSelect.innerHTML = '<option value="" disabled selected>Aucun bureau disponible</option>';
+        }
+
+        if (dataCandidats.candidats) {
+          listeCandidats = dataCandidats.candidats;
+        }
+      } catch (err) {
+        bureauSelect.innerHTML = '<option value="" disabled selected>Erreur de chargement des données</option>';
+      }
+    });
+
+    // Fonction de contrôle de cohérence
+    function verifierCoherence() {
+      const inscrits = parseInt(document.getElementById('inscrits').value || 0, 10);
+      const blancs = parseInt(document.getElementById('blancs').value || 0, 10);
+      const nuls = parseInt(document.getElementById('nuls').value || 0, 10);
+
+      const attendus = inscrits - blancs - nuls;
+
+      let totalSaisi = 0;
+      listeCandidats.forEach(c => {
+        const input = document.getElementById(`candidat-${c.id}`);
+        if (input) totalSaisi += parseInt(input.value || 0, 10);
+      });
+
+      if (inscrits === 0) {
+        coherenceBanner.className = 'p-4 mt-6 text-sm font-medium text-center text-gray-800 bg-gray-100 rounded-lg transition-colors';
+        coherenceText.textContent = 'En attente de saisie des émargements...';
+        btnSubmit.disabled = true;
+        btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+        return false;
+      }
+
+      if (totalSaisi === attendus) {
+        coherenceBanner.className = 'p-4 mt-6 text-sm font-medium text-center text-green-800 bg-green-100 rounded-lg transition-colors';
+        coherenceText.innerHTML = `✅ <strong>Cohérence parfaite</strong> : ${attendus} suffrages exprimés !`;
+        btnSubmit.disabled = false;
+        btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+        return true;
+      } else {
+        coherenceBanner.className = 'p-4 mt-6 text-sm font-medium text-center text-red-800 bg-red-100 rounded-lg transition-colors';
+        coherenceText.innerHTML = `❌ <strong>Erreur</strong> : ${attendus} suffrages attendus, mais ${totalSaisi} voix attribuées.`;
+        btnSubmit.disabled = true;
+        btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+        return false;
+      }
+    }
+
+    // Ajout des écouteurs sur les champs fixes
+    document.getElementById('inscrits').addEventListener('input', verifierCoherence);
+    document.getElementById('blancs').addEventListener('input', verifierCoherence);
+    document.getElementById('nuls').addEventListener('input', verifierCoherence);
+
+    function buildCandidatsInputs() {
+      candidatsContainer.innerHTML = '';
+      listeCandidats.forEach(c => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <label for="candidat-${c.id}" class="block mb-2 text-sm font-medium text-gray-700" style="border-left: 4px solid ${c.couleur}; padding-left: 8px;">${c.nom} (Voix)</label>
+          <input type="number" id="candidat-${c.id}" value="0" required min="0" class="candidat-input w-full p-4 text-xl border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
+        `;
+        candidatsContainer.appendChild(div);
+      });
+
+      // Écouteurs sur les nouveaux inputs dynamiques
+      document.querySelectorAll('.candidat-input').forEach(input => {
+        input.addEventListener('input', verifierCoherence);
+      });
+      verifierCoherence(); // check initial
+    }
+
+    function showAlert(message, type = 'error') {
+      alertBox.textContent = message;
+      alertBox.className = `p-4 mb-6 rounded-lg text-sm font-medium fade-in block ${type === 'error' ? 'bg-red-100 text-red-800' : 'bg-brand-100 text-brand-800'}`;
+    }
+
+    function hideAlert() {
+      alertBox.className = 'hidden';
+    }
+
+    function setLoading(buttonId, isLoading) {
+      const btn = document.getElementById(buttonId);
+      if (isLoading) {
+        btn.disabled = true;
+        btn.dataset.originalText = btn.textContent;
+        btn.textContent = 'Chargement...';
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+      } else {
+        btn.disabled = false;
+        btn.textContent = btn.dataset.originalText;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+      }
+    }
+
+    // Login Handler
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+      const nom = document.getElementById('bureau').value;
+      const pin = document.getElementById('pin').value;
+
+      if (!nom || pin.length !== 4) {
+        showAlert('Veuillez sélectionner un bureau et entrer un PIN à 4 chiffres.');
+        return;
+      }
+
+      setLoading('btn-login', true);
+
+      try {
+        const res = await fetch('/.netlify/functions/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nom, pin })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Erreur d\'authentification');
+        }
+
+        if (data.bureau && data.bureau.a_vote) {
+          throw new Error('Ce bureau a déjà transmis ses résultats.');
+        }
+
+        // Succès
+        currentSession = { nom, pin };
+        bureauNameDisplay.textContent = nom;
+
+        // Générer les inputs de candidats
+        buildCandidatsInputs();
+
+        loginForm.classList.add('hidden');
+        voteForm.classList.remove('hidden');
+
+      } catch (err) {
+        showAlert(err.message);
+      } finally {
+        setLoading('btn-login', false);
+      }
+    });
+
+    // Submit Votes Handler
+    voteForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+
+      if (!verifierCoherence()) {
+        showAlert('Impossible d\'envoyer : les données sont incohérentes avec les calculs de suffrages exprimés.');
+        return;
+      }
+
+      const inscrits = parseInt(document.getElementById('inscrits').value, 10);
+      const blancs = parseInt(document.getElementById('blancs').value, 10);
+      const nuls = parseInt(document.getElementById('nuls').value, 10);
+
+      const votes_candidats = {};
+      listeCandidats.forEach(c => {
+        votes_candidats[c.id] = parseInt(document.getElementById(`candidat-${c.id}`).value, 10);
+      });
+
+      if (confirm('Êtes-vous sûr de vouloir transmettre ces résultats définitifs ?')) {
+        setLoading('btn-submit', true);
+
+        try {
+          const res = await fetch('/.netlify/functions/submit-votes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              nom: currentSession.nom,
+              pin: currentSession.pin,
+              blancs: blancs,
+              nuls: nuls,
+              total_votants: inscrits,
+              votes_candidats: votes_candidats
+            })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || 'Erreur lors de la transmission');
+          }
+
+          // Succès
+          voteForm.classList.add('hidden');
+          successSection.classList.remove('hidden');
+
+        } catch (err) {
+          showAlert(err.message);
+        } finally {
+          setLoading('btn-submit', false);
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

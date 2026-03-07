@@ -1,0 +1,12 @@
+{
+  "name": "election-2026",
+  "version": "1.0.0",
+  "description": "Application de comptage de voix - Élection municipale",
+  "main": "index.js",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3"
+  }
+}
