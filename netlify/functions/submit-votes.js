@@ -45,7 +45,8 @@ exports.handler = async (event, context) => {
         }
 
         const inscritsDuBureau = bureau.inscrits || 0;
-        if (parseInt(total_votants) > inscritsDuBureau) {
+        // On ne bloque que si Inscrits est renseigné (> 0) et que Votants le dépasse.
+        if (inscritsDuBureau > 0 && parseInt(total_votants) > inscritsDuBureau) {
             return { statusCode: 400, body: JSON.stringify({ error: `Incohérence : Le nombre de votants (${total_votants}) ne peut pas être supérieur au nombre d'inscrits du bureau (${inscritsDuBureau}).` }) };
         }
 

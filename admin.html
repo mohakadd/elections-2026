@@ -129,38 +129,34 @@
                 </div>
             </div>
 
-            <!-- KPIs Dynamiques Candidats -->
-            <div id="candidats-kpi-container" class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-3">
-                <!-- Généré en javascript -->
+            <!-- Nouveaux KPIs (Inscrits, Votants, Blancs & Nuls, Exprimés) -->
+            <div class="grid grid-cols-2 gap-4 mb-8 md:grid-cols-4 lg:gap-6">
+                <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col justify-center">
+                    <h3 class="text-sm font-semibold text-slate-500 mb-1">Inscrits</h3>
+                    <p class="text-3xl font-bold text-slate-800" id="stat-inscrits">-</p>
+                </div>
+                <div class="p-6 bg-brand-50 rounded-2xl border border-brand-100 flex flex-col justify-center relative overflow-hidden">
+                    <h3 class="text-sm font-semibold text-brand-700 mb-1">Votants</h3>
+                    <p class="text-3xl font-bold text-brand-900" id="stat-votants">-</p>
+                    <p class="text-xs font-semibold text-brand-600 mt-1" id="stat-participation">-</p>
+                </div>
+                <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col justify-center">
+                    <h3 class="text-sm font-semibold text-slate-500 mb-1">Blancs & Nuls</h3>
+                    <p class="text-3xl font-bold text-slate-800" id="stat-blancs-nuls">-</p>
+                </div>
+                <div class="p-6 bg-green-50 rounded-2xl border border-green-100 flex flex-col justify-center">
+                    <h3 class="text-sm font-semibold text-green-700 mb-1">Exprimés</h3>
+                    <p class="text-3xl font-bold text-green-900" id="stat-exprimes">-</p>
+                </div>
             </div>
 
-            <!-- Participation, Inscrits, Abstention, Blancs/Nuls -->
-            <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-5">
-                <div class="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-                    <h3 class="text-sm font-medium text-gray-500">Inscrits (Total)</h3>
-                    <p class="mt-2 text-3xl font-bold text-slate-800" id="stat-inscrits">-</p>
+            <!-- Classement des Résultats -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <h3 class="text-lg font-bold text-slate-800">Résultats Globaux</h3>
                 </div>
-                <div class="p-6 bg-white rounded-2xl shadow-sm border border-gray-100 bg-red-50">
-                    <h3 class="text-sm font-medium text-red-600">Abstention</h3>
-                    <div class="flex items-baseline mt-2 text-3xl font-bold text-red-700">
-                        <span id="stat-abstention">-</span>
-                    </div>
-                    <p class="text-xs text-red-500 mt-1 font-medium" id="stat-abstention-pct"></p>
-                </div>
-                <div class="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-                    <h3 class="text-sm font-medium text-gray-500">Participation</h3>
-                    <div class="flex items-baseline mt-2 text-3xl font-bold text-slate-800">
-                        <span id="stat-participation">-</span>
-                        <span class="ml-1 text-2xl font-semibold text-gray-400">%</span>
-                    </div>
-                </div>
-                <div class="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-                    <h3 class="text-sm font-medium text-gray-500">Blancs</h3>
-                    <p class="mt-2 text-3xl font-bold text-slate-800" id="stat-blancs">-</p>
-                </div>
-                <div class="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-                    <h3 class="text-sm font-medium text-gray-500">Nuls</h3>
-                    <p class="mt-2 text-3xl font-bold text-slate-800" id="stat-nuls">-</p>
+                <div id="candidats-kpi-container" class="p-6 space-y-6">
+                    <!-- Les résultats candidats seront générés ici sous forme de liste -->
                 </div>
             </div>
 
@@ -443,60 +439,55 @@
                 stats = statsData.parBureau[selectedBureau];
             }
 
-            document.getElementById('stat-participation').textContent = stats.participation;
-            document.getElementById('stat-blancs').textContent = (stats.totalBlancs || 0).toLocaleString('fr-FR');
-            document.getElementById('stat-nuls').textContent = (stats.totalNuls || 0).toLocaleString('fr-FR');
-
-            document.getElementById('stat-inscrits').textContent = (stats.totalInscritsGlobals || 0).toLocaleString('fr-FR');
-
-            // Calcul de l'abstention (Inscrits Globaux remontés - Total Votants)
+            // --- 1. Mise à jour des Nouveaux KPIs ---
+            
             const inscrits = stats.totalInscritsGlobals || 0;
             const votants = stats.totalVotants || 0;
-            const abstention = inscrits - votants;
-            const abstentionPct = inscrits > 0 ? ((abstention / inscrits) * 100).toFixed(2) : 0;
+            const blancs = stats.totalBlancs || 0;
+            const nuls = stats.totalNuls || 0;
+            const exprimes = votants - blancs - nuls;
+            const participationPct = inscrits > 0 ? ((votants / inscrits) * 100).toFixed(2) : 0;
 
-            document.getElementById('stat-abstention').textContent = abstention > 0 ? abstention.toLocaleString('fr-FR') : '-';
-            document.getElementById('stat-abstention-pct').textContent = abstention > 0 ? `${abstentionPct}% des inscrits` : '';
+            document.getElementById('stat-inscrits').textContent = inscrits.toLocaleString('fr-FR');
+            document.getElementById('stat-votants').textContent = votants.toLocaleString('fr-FR');
+            document.getElementById('stat-participation').textContent = votants > 0 ? `${participationPct}% de part.` : '-';
+            document.getElementById('stat-blancs-nuls').textContent = (blancs + nuls).toLocaleString('fr-FR');
+            document.getElementById('stat-exprimes').textContent = exprimes.toLocaleString('fr-FR');
 
+            // --- 2. Mise à jour du Classement Candidats ---
             const container = document.getElementById('candidats-kpi-container');
             container.innerHTML = '';
 
-            // Total des suffrages exprimés dynamiques (Votants - Blancs - Nuls)
-            const exprimes = votants - (stats.totalBlancs || 0) - (stats.totalNuls || 0);
-
             if (!stats.candidats || stats.candidats.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 mt-4">Aucun candidat configuré.</p>';
+                container.innerHTML = '<p class="text-slate-500 mt-4 text-center">Aucun résultat à afficher.</p>';
                 return;
             }
 
-            stats.candidats.forEach(c => {
-                const pourcentageStr = exprimes > 0 ? ((c.voix / exprimes) * 100).toFixed(1) : '0';
+            // Tri par nombre de voix décroissant
+            const sortedCandidats = [...stats.candidats].sort((a, b) => b.voix - a.voix);
 
-                // On crée une carte avec une barre de progression animée
-                const card = document.createElement('div');
-                card.className = "p-6 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between";
+            sortedCandidats.forEach((c, index) => {
+                const pourcentageStr = exprimes > 0 ? ((c.voix / exprimes) * 100).toFixed(2) : '0';
 
-                card.innerHTML = `
-                    <div>
+                const row = document.createElement('div');
+                row.className = "mb-6 last:mb-0";
+
+                row.innerHTML = `
+                    <div class="flex justify-between items-end mb-2">
                         <div class="flex items-center gap-3">
-                            <span class="w-4 h-4 rounded-full" style="background-color: ${c.couleur};"></span>
-                            <h3 class="text-sm font-medium text-gray-600 leading-tight">${c.nom}</h3>
+                            <span class="text-xl font-bold text-slate-400 w-6">${index + 1}.</span>
+                            <span class="text-lg font-bold text-slate-800">${c.nom}</span>
                         </div>
-                        <div class="flex items-baseline mt-4 mb-2 text-4xl font-bold text-slate-800">
-                            ${c.voix.toLocaleString('fr-FR')} <span class="text-sm font-normal text-gray-500 ml-2">voix</span>
+                        <div class="text-right">
+                            <div class="text-xl font-bold" style="color: ${c.couleur};">${pourcentageStr}%</div>
+                            <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">${c.voix.toLocaleString('fr-FR')} voix</div>
                         </div>
                     </div>
-                    <div>
-                        <div class="flex justify-between text-xs text-gray-500 font-medium mb-1">
-                            <span>Score</span>
-                            <span>${pourcentageStr}%</span>
-                        </div>
-                        <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                            <div class="h-2.5 rounded-full transition-all duration-1000 ease-out" style="width: 0%; background-color: ${c.couleur};" data-target-width="${pourcentageStr}%"></div>
-                        </div>
+                    <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
+                        <div class="h-3 rounded-full transition-all duration-1000 ease-out" style="width: 0%; background-color: ${c.couleur};" data-target-width="${pourcentageStr}%"></div>
                     </div>
                 `;
-                container.appendChild(card);
+                container.appendChild(row);
             });
 
             // Trigger reflow pour l'animation des barres

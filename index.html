@@ -110,21 +110,24 @@
       </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div>
-          <label for="inscrits" class="block mb-2 text-sm font-medium text-gray-700">Total des émargements
-            (Votants)</label>
+        <div class="flex flex-col">
+          <label for="inscrits"
+            class="block mb-2 text-sm font-medium text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis h-[40px] flex items-end">Votants
+            (Émargements)</label>
           <input type="number" id="inscrits" required min="1"
-            class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
+            class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500 mt-auto">
         </div>
-        <div>
-          <label for="blancs" class="block mb-2 text-sm font-medium text-gray-700">Blancs</label>
+        <div class="flex flex-col">
+          <label for="blancs"
+            class="block mb-2 text-sm font-medium text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis h-[40px] flex items-end">Blancs</label>
           <input type="number" id="blancs" value="0" required min="0"
-            class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
+            class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500 mt-auto">
         </div>
-        <div>
-          <label for="nuls" class="block mb-2 text-sm font-medium text-gray-700">Nuls</label>
+        <div class="flex flex-col">
+          <label for="nuls"
+            class="block mb-2 text-sm font-medium text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis h-[40px] flex items-end">Nuls</label>
           <input type="number" id="nuls" value="0" required min="0"
-            class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
+            class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500 mt-auto">
         </div>
       </div>
 
@@ -238,8 +241,16 @@
         btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
         return true;
       } else {
+        const diff = attendus - totalSaisi;
+        let messageErreur = '';
+        if (diff > 0) {
+          messageErreur = `il manque <strong>${diff}</strong> voix à attribuer.`;
+        } else {
+          messageErreur = `il y a <strong>${Math.abs(diff)}</strong> voix en trop attribuées.`;
+        }
+
         coherenceBanner.className = 'p-4 mt-6 text-sm font-medium text-center text-red-800 bg-red-100 rounded-lg transition-colors';
-        coherenceText.innerHTML = `❌ <strong>Erreur</strong> : ${attendus} suffrages attendus, mais ${totalSaisi} voix attribuées.`;
+        coherenceText.innerHTML = `❌ <strong>Erreur</strong> : ${attendus} suffrages attendus, ${messageErreur}`;
         btnSubmit.disabled = true;
         btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
         return false;
