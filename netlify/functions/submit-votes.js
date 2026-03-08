@@ -87,7 +87,7 @@ exports.handler = async (event, context) => {
         const { error: updateError } = await supabase
             .from('bureaux')
             .update({ a_vote: true })
-            .eq('nom', nom);
+            .eq('id', bureauId);
 
         if (updateError) {
             throw updateError;
