@@ -83,7 +83,7 @@ exports.handler = async (event, context) => {
         const statsParBureau = {};
         bureaux.forEach(bureau => {
             // Trouver le résultat pour ce bureau
-            const resBureau = resultats.find(r => r.bureau_nom === bureau.nom);
+            const resBureau = resultats.find(r => r.bureau_id === bureau.id);
 
             if (resBureau) {
                 // S'il y a un résultat, on calcule ses stats en utilisant le nombre d'inscrits du bureau
@@ -109,7 +109,7 @@ exports.handler = async (event, context) => {
                     };
                 });
 
-                statsParBureau[bureau.nom] = stat;
+                statsParBureau[bureau.id] = stat;
             }
         });
 

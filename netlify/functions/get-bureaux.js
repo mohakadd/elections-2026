@@ -10,15 +10,17 @@ exports.handler = async (event, context) => {
         const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
         const supabase = createClient(supabaseUrl, supabaseKey);
 
-        // API Publique : On ne renvoie que l'ID et le Nom pour le menu déroulant
+        // API Publique : On renvoie l'ID, le Numéro et le Nom pour le menu déroulant
         const { data: bureaux, error } = await supabase
             .from('bureaux')
-            .select('id, nom')
-            .order('nom');
+            .select('id, numero, nom');
 
         if (error) {
             throw error;
         }
+
+        // Tri numérique en Javascript (pour éviter que '10' ne passe avant '2')
+        bureaux.sort((a, b) => (parseInt(a.numero) || 0) - (parseInt(b.numero) || 0));
 
         return {
             statusCode: 200,

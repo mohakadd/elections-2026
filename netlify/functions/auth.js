@@ -6,10 +6,10 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { nom, pin } = JSON.parse(event.body);
+    const { bureauId, pin } = JSON.parse(event.body);
 
-    if (!nom || !pin) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Nom et PIN requis' }) };
+    if (!bureauId || !pin) {
+      return { statusCode: 400, body: JSON.stringify({ error: 'Bureau ID et PIN requis' }) };
     }
 
     const supabaseUrl = process.env.SUPABASE_URL;
@@ -19,7 +19,7 @@ exports.handler = async (event, context) => {
     const { data: bureau, error } = await supabase
       .from('bureaux')
       .select('*')
-      .eq('nom', nom)
+      .eq('id', bureauId)
       .eq('pin', pin)
       .single();
 
@@ -34,7 +34,7 @@ exports.handler = async (event, context) => {
       statusCode: 200,
       body: JSON.stringify({
         message: 'Authentification réussie',
-        bureau: { nom: bureau.nom, a_vote: bureau.a_vote }
+        bureau: { id: bureau.id, numero: bureau.numero, nom: bureau.nom, a_vote: bureau.a_vote, inscrits: bureau.inscrits }
       })
     };
   } catch (error) {

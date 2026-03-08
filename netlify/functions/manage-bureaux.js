@@ -19,16 +19,26 @@ exports.handler = async (event, context) => {
     try {
         // ---- CREATE (POST) ----
         if (event.httpMethod === 'POST') {
-            const { nom, pin, inscrits } = JSON.parse(event.body);
-            if (!nom || !pin || pin.length !== 4) {
-                return { statusCode: 400, body: JSON.stringify({ error: 'Nom et PIN (4 chiffres) requis' }) };
+            const { numero, nom, pin, inscrits } = JSON.parse(event.body);
+            if (!numero || !nom || !pin || pin.length !== 4) {
+                return { statusCode: 400, body: JSON.stringify({ error: 'Numéro, Nom et PIN (4 chiffres) requis' }) };
+            }
+
+            // Vérification unicité Numéro
+            const { data: existing, error: checkError } = await supabase
+                .from('bureaux')
+                .select('numero')
+                .eq('numero', numero);
+            if (checkError) throw checkError;
+            if (existing && existing.length > 0) {
+                return { statusCode: 400, body: JSON.stringify({ error: `Un bureau avec ce Numéro existe déjà` }) };
             }
 
             const inscritsValue = parseInt(inscrits) || 0;
 
             const { data, error } = await supabase
                 .from('bureaux')
-                .insert([{ nom, pin, inscrits: inscritsValue }])
+                .insert([{ numero, nom, pin, inscrits: inscritsValue }])
                 .select();
 
             if (error) {
@@ -46,14 +56,10 @@ exports.handler = async (event, context) => {
             if (action === 'reset') {
                 if (!id) return { statusCode: 400, body: JSON.stringify({ error: 'ID du bureau requis pour réinitialisation' }) };
 
-                // 1. Delete associated results (will cascade to votes_candidats)
-                const { data: bureau } = await supabase.from('bureaux').select('nom').eq('id', id).single();
-                if (!bureau) return { statusCode: 404, body: JSON.stringify({ error: 'Bureau introuvable' }) };
-
                 const { error: delResError } = await supabase
                     .from('resultats')
                     .delete()
-                    .eq('bureau_nom', bureau.nom);
+                    .eq('bureau_id', id);
 
                 if (delResError) throw delResError;
 
@@ -67,15 +73,27 @@ exports.handler = async (event, context) => {
                 if (error) throw error;
                 return { statusCode: 200, body: JSON.stringify({ message: 'Bureau réinitialisé', bureau: data[0] }) };
             } else if (action === 'edit') {
-                const { nom, pin, inscrits } = body;
-                if (!id || !nom || !pin || pin.length !== 4) {
+                const { numero, nom, pin, inscrits } = body;
+                if (!id || !numero || !nom || !pin || pin.length !== 4) {
                     return { statusCode: 400, body: JSON.stringify({ error: 'Données invalides pour la modification' }) };
                 }
+
+                // Vérification unicité Numéro (exclure l'actuel)
+                const { data: existing, error: checkError } = await supabase
+                    .from('bureaux')
+                    .select('id, numero')
+                    .eq('numero', numero);
+                if (checkError) throw checkError;
+                const conflicts = existing.filter(b => b.id !== id);
+                if (conflicts.length > 0) {
+                    return { statusCode: 400, body: JSON.stringify({ error: `Un bureau avec ce Numéro existe déjà` }) };
+                }
+
                 const inscritsValue = parseInt(inscrits) || 0;
 
                 const { data, error } = await supabase
                     .from('bureaux')
-                    .update({ nom, pin, inscrits: inscritsValue })
+                    .update({ numero, nom, pin, inscrits: inscritsValue })
                     .eq('id', id)
                     .select();
 

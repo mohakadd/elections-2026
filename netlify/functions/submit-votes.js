@@ -6,9 +6,9 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        const { nom, pin, blancs, nuls, total_votants, votes_candidats } = JSON.parse(event.body);
+        const { bureauId, pin, blancs, nuls, total_votants, votes_candidats } = JSON.parse(event.body);
 
-        if (!nom || !pin || blancs == null || nuls == null || !total_votants || !votes_candidats) {
+        if (!bureauId || !pin || blancs == null || nuls == null || !total_votants || !votes_candidats) {
             return { statusCode: 400, body: JSON.stringify({ error: 'Données manquantes' }) };
         }
 
@@ -32,7 +32,7 @@ exports.handler = async (event, context) => {
         const { data: bureau, error: authError } = await supabase
             .from('bureaux')
             .select('*')
-            .eq('nom', nom)
+            .eq('id', bureauId)
             .eq('pin', pin)
             .single();
 
@@ -54,7 +54,7 @@ exports.handler = async (event, context) => {
         const { data: resultat, error: insertError } = await supabase
             .from('resultats')
             .insert([{
-                bureau_nom: nom,
+                bureau_id: bureauId,
                 blancs: parseInt(blancs),
                 nuls: parseInt(nuls),
                 total_votants: parseInt(total_votants),

@@ -9,7 +9,8 @@
 -- 1. Table 'bureaux' (Inchangée structurellement, ajout d'inscrits)
 CREATE TABLE IF NOT EXISTS public.bureaux (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  nom text UNIQUE NOT NULL,
+  numero text UNIQUE NOT NULL,
+  nom text NOT NULL,
   pin text NOT NULL,
   inscrits integer NOT NULL DEFAULT 0,
   a_vote boolean DEFAULT false
@@ -25,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.candidats (
 -- 3. Table 'resultats' (MODIFIEE : Suppression de voix_a/voix_b, séparation blancs/nuls)
 CREATE TABLE IF NOT EXISTS public.resultats (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  bureau_nom text NOT NULL REFERENCES public.bureaux(nom) ON DELETE CASCADE,
+  bureau_id uuid NOT NULL REFERENCES public.bureaux(id) ON DELETE CASCADE,
   blancs integer NOT NULL DEFAULT 0,
   nuls integer NOT NULL DEFAULT 0,
   total_votants integer NOT NULL, -- Émargements

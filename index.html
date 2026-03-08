@@ -83,7 +83,7 @@
     <!-- Section 1 : Connexion -->
     <form id="login-form" class="space-y-6">
       <div>
-        <label for="bureau" class="block mb-2 text-sm font-medium text-gray-700">Nom du Bureau</label>
+        <label for="bureau" class="block mb-2 text-sm font-medium text-gray-700">Numéro de Bureau</label>
         <select id="bureau" name="bureau" required
           class="w-full p-4 text-base border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-blue-500 focus:border-blue-500">
           <option value="" disabled selected>Chargement des bureaux...</option>
@@ -98,16 +98,18 @@
       </div>
 
       <button type="submit" id="btn-login"
-        class="w-full px-5 py-4 text-base font-semibold text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
+        class="w-full px-5 py-4 text-base font-semibold text-white transition-colors bg-brand-600 rounded-lg hover:bg-brand-700 focus:ring-4 focus:ring-brand-300">
         Authentification
       </button>
     </form>
 
     <!-- Section 2 : Saisie des résultats (Cachée par défaut) -->
     <form id="vote-form" class="hidden space-y-6">
-      <div class="p-4 mb-6 bg-brand-50 rounded-lg">
+      <div class="p-4 mb-6 bg-brand-50 rounded-lg flex items-center justify-between">
         <p class="text-sm font-semibold text-brand-800">Connecté en tant que : <span id="bureau-name-display"
             class="font-bold"></span></p>
+        <p class="text-sm font-medium text-brand-600 bg-brand-100 px-3 py-1 rounded-full"><span
+            id="bureau-inscrits-display"></span> Inscrits</p>
       </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-3 items-end">
@@ -194,8 +196,8 @@
         if (dataBureaux.bureaux && dataBureaux.bureaux.length > 0) {
           dataBureaux.bureaux.forEach(b => {
             const option = document.createElement('option');
-            option.value = b.nom;
-            option.textContent = b.nom;
+            option.value = b.id;
+            option.textContent = (b.numero ? b.numero + ' - ' : '') + b.nom;
             bureauSelect.appendChild(option);
           });
         } else {
@@ -305,10 +307,10 @@
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       hideAlert();
-      const nom = document.getElementById('bureau').value;
+      const bureauId = document.getElementById('bureau').value;
       const pin = document.getElementById('pin').value;
 
-      if (!nom || pin.length !== 4) {
+      if (!bureauId || pin.length !== 4) {
         showAlert('Veuillez sélectionner un bureau et entrer un PIN à 4 chiffres.');
         return;
       }
@@ -319,7 +321,7 @@
         const res = await fetch('/.netlify/functions/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nom, pin })
+          body: JSON.stringify({ bureauId, pin })
         });
 
         const data = await res.json();
@@ -333,8 +335,10 @@
         }
 
         // Succès
-        currentSession = { nom, pin };
-        bureauNameDisplay.textContent = nom;
+        currentSession = { bureauId, pin };
+        bureauNameDisplay.textContent = (data.bureau.numero ? data.bureau.numero + ' - ' : '') + data.bureau.nom;
+        const nbInscrits = data.bureau.inscrits || 0;
+        document.getElementById('bureau-inscrits-display').textContent = nbInscrits;
 
         // Générer les inputs de candidats
         buildCandidatsInputs();
@@ -376,7 +380,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              nom: currentSession.nom,
+              bureauId: currentSession.bureauId,
               pin: currentSession.pin,
               blancs: blancs,
               nuls: nuls,
