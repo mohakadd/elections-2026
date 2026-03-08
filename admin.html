@@ -165,7 +165,26 @@
             <!-- Liste des bureaux -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-5 border-b border-gray-100 bg-gray-50">
-                    <h3 class="text-lg font-semibold text-gray-800">État des remontées par bureau</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">État des remontées par bureau</h3>
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <input type="text" id="search-remontees" placeholder="Rechercher un bureau..."
+                            class="flex-1 p-2 text-sm border-gray-300 rounded-lg shadow-sm bg-white focus:ring-brand-500 focus:border-brand-500">
+                        <select id="filter-statut-remontees"
+                            class="p-2 text-sm border-gray-300 rounded-lg shadow-sm bg-white focus:ring-brand-500 focus:border-brand-500">
+                            <option value="tous">Tous les statuts</option>
+                            <option value="transmis">Transmis uniquement</option>
+                            <option value="attente">En attente uniquement</option>
+                        </select>
+                        <select id="sort-remontees"
+                            class="p-2 text-sm border-gray-300 rounded-lg shadow-sm bg-white focus:ring-brand-500 focus:border-brand-500">
+                            <option value="numero-asc">Numéro ↑</option>
+                            <option value="numero-desc">Numéro ↓</option>
+                            <option value="nom-asc">Nom A→Z</option>
+                            <option value="nom-desc">Nom Z→A</option>
+                            <option value="statut-transmis">Transmis en premier</option>
+                            <option value="statut-attente">En attente en premier</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -235,7 +254,7 @@
                 <div
                     class="px-6 py-5 border-b border-gray-100 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h3 class="text-lg font-semibold text-gray-800 shrink-0">Bureaux configurés</h3>
-                    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-center">
                         <input type="text" id="search-manage-bureau" placeholder="Rechercher par n° ou nom..."
                             class="p-2 border border-gray-300 rounded-lg text-sm focus:ring-brand-500 focus:border-brand-500 w-full sm:w-64">
                         <select id="sort-manage-bureau"
@@ -245,6 +264,10 @@
                             <option value="nom_asc">Tri : Nom de A à Z</option>
                             <option value="nom_desc">Tri : Nom de Z à A</option>
                         </select>
+                        <button type="button" onclick="exportBureauxCSV()"
+                            class="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 whitespace-nowrap flex items-center gap-2">
+                            📄 Exporter CSV
+                        </button>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -401,23 +424,10 @@
                     option.textContent = (bureau.numero ? bureau.numero + ' - ' : '') + bureau.nom;
                     filterBureau.appendChild(option);
                 }
-
-                // Rendu Resultats
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-gray-50 transition-colors';
-                const statusClass = bureau.a_vote ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-50 text-red-700 border-red-200';
-                const statusText = bureau.a_vote ? 'Transmis' : 'En attente';
-
-                tr.innerHTML = `
-                  <td class="px-6 py-4 text-sm font-medium text-gray-900">${bureau.numero || ''} - ${bureau.nom}</td>
-                  <td class="px-6 py-4 text-right">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusClass}">
-                      ${statusText}
-                    </span>
-                  </td>
-                `;
-                tbody.appendChild(tr);
             });
+
+            // Rendu de la section État des remontées (avec filtre/tri)
+            renderRemontees();
 
             // Appel de la nouvelle fonction pour le rendu et tri de l'onglet Bureaux
             renderManageBureaux();
@@ -428,9 +438,88 @@
             }
         }
 
+        // Ecouteurs pour le tri et le filtre des remontées
+        document.getElementById('search-remontees').addEventListener('input', renderRemontees);
+        document.getElementById('filter-statut-remontees').addEventListener('change', renderRemontees);
+        document.getElementById('sort-remontees').addEventListener('change', renderRemontees);
+
+        function renderRemontees() {
+            const tbody = document.getElementById('bureaux-list');
+            tbody.innerHTML = '';
+            if (!allBureaux || allBureaux.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="px-6 py-8 text-center text-gray-500">Aucun bureau trouvé.</td></tr>';
+                return;
+            }
+
+            const searchVal = (document.getElementById('search-remontees').value || '').toLowerCase();
+            const statutFilter = document.getElementById('filter-statut-remontees').value;
+            const sortVal = document.getElementById('sort-remontees').value;
+
+            // Filtrage
+            let filtered = allBureaux.filter(b => {
+                const matchSearch = !searchVal || (b.numero && b.numero.toLowerCase().includes(searchVal)) || b.nom.toLowerCase().includes(searchVal);
+                let matchStatut = true;
+                if (statutFilter === 'transmis') matchStatut = b.a_vote === true;
+                if (statutFilter === 'attente') matchStatut = !b.a_vote;
+                return matchSearch && matchStatut;
+            });
+
+            // Tri
+            filtered.sort((a, b) => {
+                switch (sortVal) {
+                    case 'numero-asc': return (parseInt(a.numero) || 0) - (parseInt(b.numero) || 0);
+                    case 'numero-desc': return (parseInt(b.numero) || 0) - (parseInt(a.numero) || 0);
+                    case 'nom-asc': return a.nom.localeCompare(b.nom);
+                    case 'nom-desc': return b.nom.localeCompare(a.nom);
+                    case 'statut-transmis': return (b.a_vote ? 1 : 0) - (a.a_vote ? 1 : 0);
+                    case 'statut-attente': return (a.a_vote ? 1 : 0) - (b.a_vote ? 1 : 0);
+                    default: return (parseInt(a.numero) || 0) - (parseInt(b.numero) || 0);
+                }
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="px-6 py-8 text-center text-gray-500">Aucun bureau ne correspond à votre recherche.</td></tr>';
+                return;
+            }
+
+            filtered.forEach(bureau => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 transition-colors';
+                const statusClass = bureau.a_vote ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-50 text-red-700 border-red-200';
+                const statusText = bureau.a_vote ? 'Transmis' : 'En attente';
+                tr.innerHTML = `
+                  <td class="px-6 py-4 text-sm font-medium text-gray-900">${bureau.numero || ''} - ${bureau.nom}</td>
+                  <td class="px-6 py-4 text-right">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusClass}">
+                      ${statusText}
+                    </span>
+                  </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
         // Ecouteurs pour le tri et le filtre des bureaux configurés
         document.getElementById('search-manage-bureau').addEventListener('input', renderManageBureaux);
         document.getElementById('sort-manage-bureau').addEventListener('change', renderManageBureaux);
+
+        function exportBureauxCSV() {
+            if (!allBureaux || allBureaux.length === 0) {
+                alert('Aucun bureau à exporter.');
+                return;
+            }
+            const sorted = [...allBureaux].sort((a, b) => (parseInt(a.numero) || 0) - (parseInt(b.numero) || 0));
+            let csv = '\uFEFFNuméro;Nom;PIN\r\n';
+            sorted.forEach(b => {
+                csv += `${b.numero || ''};"${b.nom}";${b.pin}\r\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'bureaux_pins.csv';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
 
         function renderManageBureaux() {
             manageBureauxList.innerHTML = '';
