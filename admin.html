@@ -655,7 +655,7 @@
                     if (authToken && tabResultats.classList.contains('block') || !tabResultats.classList.contains('hidden')) {
                         fetchAdminData(true); // silent fetch
                     }
-                }, 10000);
+                }, 60000);
 
             } catch (err) {
                 alertBox.textContent = err.message;
