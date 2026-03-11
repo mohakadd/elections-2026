@@ -81,10 +81,10 @@ exports.handler = async (event, context) => {
 
                 if (delResError) throw delResError;
 
-                // 2. Set API a_vote to false for ALL bureaux
+                // 2. Set API a_vote to false and inscrits to 0 for ALL bureaux
                 const { error } = await supabase
                     .from('bureaux')
-                    .update({ a_vote: false })
+                    .update({ a_vote: false, inscrits: 0 })
                     .neq('id', '00000000-0000-0000-0000-000000000000');
 
                 if (error) throw error;
