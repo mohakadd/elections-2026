@@ -121,12 +121,12 @@
         </div>
         <div>
           <label for="blancs" class="block mb-2 text-sm font-medium text-gray-700">Blancs</label>
-          <input type="number" id="blancs" value="0" required min="0"
+          <input type="number" id="blancs" required min="0"
             class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
         </div>
         <div>
           <label for="nuls" class="block mb-2 text-sm font-medium text-gray-700">Nuls</label>
-          <input type="number" id="nuls" value="0" required min="0"
+          <input type="number" id="nuls" required min="0"
             class="w-full p-3 text-lg border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
         </div>
       </div>
@@ -214,17 +214,38 @@
 
     // Fonction de contrôle de cohérence
     function verifierCoherence() {
-      const inscrits = parseInt(document.getElementById('inscrits').value || 0, 10);
-      const blancs = parseInt(document.getElementById('blancs').value || 0, 10);
-      const nuls = parseInt(document.getElementById('nuls').value || 0, 10);
+      const inscritsEl = document.getElementById('inscrits');
+      const blancsEl = document.getElementById('blancs');
+      const nulsEl = document.getElementById('nuls');
 
-      const attendus = inscrits - blancs - nuls;
-
+      // Vérifier si un champ est vide
+      let hasEmptyFields = (inscritsEl.value === '' || blancsEl.value === '' || nulsEl.value === '');
+      
       let totalSaisi = 0;
       listeCandidats.forEach(c => {
         const input = document.getElementById(`candidat-${c.id}`);
-        if (input) totalSaisi += parseInt(input.value || 0, 10);
+        if (input) {
+          if (input.value === '') {
+            hasEmptyFields = true;
+          } else {
+            totalSaisi += parseInt(input.value, 10);
+          }
+        }
       });
+
+      if (hasEmptyFields) {
+        coherenceBanner.className = 'p-4 mt-6 text-sm font-medium text-center text-gray-800 bg-gray-100 rounded-lg transition-colors';
+        coherenceText.textContent = 'En attente de saisie : veuillez remplir tous les champs...';
+        btnSubmit.disabled = true;
+        btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+        return false;
+      }
+
+      const inscrits = parseInt(inscritsEl.value, 10);
+      const blancs = parseInt(blancsEl.value, 10);
+      const nuls = parseInt(nulsEl.value, 10);
+
+      const attendus = inscrits - blancs - nuls;
 
       if (inscrits === 0) {
         coherenceBanner.className = 'p-4 mt-6 text-sm font-medium text-center text-gray-800 bg-gray-100 rounded-lg transition-colors';
@@ -268,7 +289,7 @@
         const div = document.createElement('div');
         div.innerHTML = `
           <label for="candidat-${c.id}" class="block mb-2 text-sm font-medium text-gray-700" style="border-left: 4px solid ${c.couleur}; padding-left: 8px;">${c.nom} (Voix)</label>
-          <input type="number" id="candidat-${c.id}" value="0" required min="0" class="candidat-input w-full p-4 text-xl border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
+          <input type="number" id="candidat-${c.id}" required min="0" class="candidat-input w-full p-4 text-xl border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:ring-brand-500 focus:border-brand-500">
         `;
         candidatsContainer.appendChild(div);
       });
