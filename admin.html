@@ -268,6 +268,10 @@
                             class="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 whitespace-nowrap flex items-center gap-2">
                             📄 Exporter CSV
                         </button>
+                        <button type="button" onclick="resetAllBureaux()"
+                            class="px-4 py-2 text-sm font-semibold text-red-700 bg-red-100 border border-red-200 rounded-lg hover:bg-red-200 whitespace-nowrap flex items-center gap-2">
+                            ⚠️ Réinitialiser TOUT
+                        </button>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -835,6 +839,36 @@
                 fetchAdminData(false);
             } catch (err) {
                 alert(err.message);
+            }
+        }
+
+        async function resetAllBureaux() {
+            const firstConfirm = confirm("⚠️ ATTENTION : Vous êtes sur le point de supprimer DÉFINITIVEMENT les résultats de TOUTES les urnes. Les présidents de bureaux devront tous revoter.\n\nVoulez-vous continuer ?");
+            if (!firstConfirm) return;
+
+            const secondConfirm = prompt("Sécurité : Veuillez taper CONFIRMER en majuscules pour valider l'effacement de toutes les données.");
+            if (secondConfirm !== "CONFIRMER") {
+                alert("Annulation : Le mot 'CONFIRMER' n'a pas été saisi correctement.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/.netlify/functions/manage-bureaux', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ action: 'reset_all' })
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Erreur inconnue');
+
+                alert('Succès : Tous les bureaux ont été réinitialisés. La plateforme est vierge pour un nouveau scrutin.');
+                fetchAdminData(false); // Recharge totale
+            } catch (err) {
+                alert('Erreur lors de la réinitialisation globale : ' + err.message);
             }
         }
 

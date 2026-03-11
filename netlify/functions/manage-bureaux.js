@@ -72,6 +72,23 @@ exports.handler = async (event, context) => {
 
                 if (error) throw error;
                 return { statusCode: 200, body: JSON.stringify({ message: 'Bureau réinitialisé', bureau: data[0] }) };
+            } else if (action === 'reset_all') {
+                // 1. Delete ALL results
+                const { error: delResError } = await supabase
+                    .from('resultats')
+                    .delete()
+                    .neq('id', '00000000-0000-0000-0000-000000000000'); // Dummy condition to delete all rows
+
+                if (delResError) throw delResError;
+
+                // 2. Set API a_vote to false for ALL bureaux
+                const { error } = await supabase
+                    .from('bureaux')
+                    .update({ a_vote: false })
+                    .neq('id', '00000000-0000-0000-0000-000000000000');
+
+                if (error) throw error;
+                return { statusCode: 200, body: JSON.stringify({ message: 'Tous les bureaux ont été réinitialisés' }) };
             } else if (action === 'edit') {
                 const { numero, nom, pin, inscrits } = body;
                 if (!id || !numero || !nom || !pin || pin.length !== 4) {
