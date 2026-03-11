@@ -513,9 +513,9 @@
                 return;
             }
             const sorted = [...allBureaux].sort((a, b) => (parseInt(a.numero) || 0) - (parseInt(b.numero) || 0));
-            let csv = '\uFEFFNuméro;Nom;PIN\r\n';
+            let csv = '\uFEFFNuméro;Nom;PIN;Inscrits\r\n';
             sorted.forEach(b => {
-                csv += `${b.numero || ''};"${b.nom}";${b.pin}\r\n`;
+                csv += `${b.numero || ''};"${b.nom}";${b.pin};${b.inscrits || 0}\r\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
