@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event, context) => {
-    const allowedMethods = ['POST', 'DELETE'];
+    const allowedMethods = ['POST', 'DELETE', 'PUT'];
 
     if (!allowedMethods.includes(event.httpMethod)) {
         return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
@@ -24,9 +24,19 @@ exports.handler = async (event, context) => {
                 return { statusCode: 400, body: JSON.stringify({ error: 'Nom et Couleur requis' }) };
             }
 
+            // Déterminer le prochain ordre
+            const { data: existing, error: fetchError } = await supabase
+                .from('candidats')
+                .select('ordre')
+                .order('ordre', { ascending: false })
+                .limit(1);
+
+            if (fetchError) throw fetchError;
+            const nextOrdre = (existing && existing.length > 0) ? existing[0].ordre + 1 : 0;
+
             const { data, error } = await supabase
                 .from('candidats')
-                .insert([{ nom, couleur }])
+                .insert([{ nom, couleur, ordre: nextOrdre }])
                 .select();
 
             if (error) {
@@ -34,6 +44,24 @@ exports.handler = async (event, context) => {
                 throw error;
             }
             return { statusCode: 201, body: JSON.stringify({ message: 'Candidat créé avec succès', candidat: data[0] }) };
+        }
+
+        // ---- REORDER (PUT) ----
+        if (event.httpMethod === 'PUT') {
+            const { ordres } = JSON.parse(event.body);
+            if (!ordres || !Array.isArray(ordres)) {
+                return { statusCode: 400, body: JSON.stringify({ error: 'Liste des ordres requise (tableau [{id, ordre}, ...])' }) };
+            }
+
+            for (const item of ordres) {
+                const { error } = await supabase
+                    .from('candidats')
+                    .update({ ordre: item.ordre })
+                    .eq('id', item.id);
+                if (error) throw error;
+            }
+
+            return { statusCode: 200, body: JSON.stringify({ message: 'Ordre mis à jour avec succès' }) };
         }
 
         // ---- DELETE (DELETE) ----
@@ -57,3 +85,4 @@ exports.handler = async (event, context) => {
         return { statusCode: 500, body: JSON.stringify({ error: 'Erreur serveur', details: error.message }) };
     }
 };
+

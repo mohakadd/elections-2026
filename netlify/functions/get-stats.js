@@ -27,7 +27,7 @@ exports.handler = async (event, context) => {
         const { data: candidats, error: candidatsError } = await supabase
             .from('candidats')
             .select('*')
-            .order('nom');
+            .order('ordre');
 
         if (candidatsError) throw candidatsError;
 

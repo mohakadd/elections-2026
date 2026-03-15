@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS public.bureaux (
 CREATE TABLE IF NOT EXISTS public.candidats (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   nom text UNIQUE NOT NULL,
-  couleur text NOT NULL DEFAULT '#000000'
+  couleur text NOT NULL DEFAULT '#000000',
+  ordre integer NOT NULL DEFAULT 0
 );
 
 -- 3. Table 'resultats' (MODIFIEE : Suppression de voix_a/voix_b, séparation blancs/nuls)

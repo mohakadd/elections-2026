@@ -330,15 +330,22 @@
 
             <!-- Liste des candidats -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50">
+                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h3 class="text-lg font-semibold text-gray-800">Candidats configurés</h3>
+                    <button type="button" id="btn-save-ordre" onclick="saveOrdre()"
+                        class="hidden px-4 py-2 text-sm font-semibold text-white bg-brand-500 rounded-lg hover:bg-brand-600 whitespace-nowrap flex items-center gap-2 transition-colors">
+                        💾 Sauvegarder l'ordre
+                    </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr>
                                 <th
-                                    class="px-6 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white w-16">
+                                    class="px-4 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white w-20 text-center">
+                                    Ordre</th>
+                                <th
+                                    class="px-4 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white w-16">
                                     Couleur</th>
                                 <th
                                     class="px-6 py-4 text-sm font-semibold text-gray-500 border-b border-gray-100 bg-white">
@@ -671,16 +678,38 @@
             renderManageCandidats(statsData.global.candidats);
         }
 
+        let orderedCandidats = []; // Liste locale pour gérer l'ordre
+        let ordreModifie = false;
+
         function renderManageCandidats(candidats) {
             manageCandidatsList.innerHTML = '';
             if (!candidats || candidats.length === 0) {
-                manageCandidatsList.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">Aucun candidat.</td></tr>';
+                manageCandidatsList.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">Aucun candidat.</td></tr>';
+                document.getElementById('btn-save-ordre').classList.add('hidden');
                 return;
             }
-            candidats.forEach(c => {
+            // Copie triée par ordre
+            orderedCandidats = [...candidats].sort((a, b) => (a.ordre ?? 0) - (b.ordre ?? 0));
+
+            orderedCandidats.forEach((c, index) => {
                 const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 transition-colors';
+                tr.dataset.id = c.id;
+                const isFirst = index === 0;
+                const isLast = index === orderedCandidats.length - 1;
                 tr.innerHTML = `
-                  <td class="px-6 py-4"><span class="block w-6 h-6 rounded border border-gray-200" style="background-color: ${c.couleur}"></span></td>
+                  <td class="px-4 py-4 text-center">
+                      <div class="flex items-center justify-center gap-1">
+                          <button onclick="moveCandidatUp(${index})" class="p-1 rounded hover:bg-gray-200 transition-colors ${isFirst ? 'opacity-30 cursor-not-allowed' : ''}" ${isFirst ? 'disabled' : ''} title="Monter">
+                              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                          </button>
+                          <span class="text-sm font-bold text-gray-400 w-6 text-center">${index + 1}</span>
+                          <button onclick="moveCandidatDown(${index})" class="p-1 rounded hover:bg-gray-200 transition-colors ${isLast ? 'opacity-30 cursor-not-allowed' : ''}" ${isLast ? 'disabled' : ''} title="Descendre">
+                              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                          </button>
+                      </div>
+                  </td>
+                  <td class="px-4 py-4"><span class="block w-6 h-6 rounded border border-gray-200" style="background-color: ${c.couleur}"></span></td>
                   <td class="px-6 py-4 text-sm font-medium text-gray-900">${c.nom}</td>
                   <td class="px-6 py-4 text-right">
                       <button onclick="deleteCandidat('${c.id}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Supprimer</button>
@@ -688,6 +717,54 @@
                 `;
                 manageCandidatsList.appendChild(tr);
             });
+
+            // Afficher/masquer le bouton sauvegarder
+            document.getElementById('btn-save-ordre').classList.toggle('hidden', !ordreModifie);
+        }
+
+        function moveCandidatUp(index) {
+            if (index <= 0) return;
+            [orderedCandidats[index], orderedCandidats[index - 1]] = [orderedCandidats[index - 1], orderedCandidats[index]];
+            // Mettre à jour le champ ordre
+            orderedCandidats.forEach((c, i) => c.ordre = i);
+            ordreModifie = true;
+            renderManageCandidats(orderedCandidats);
+        }
+
+        function moveCandidatDown(index) {
+            if (index >= orderedCandidats.length - 1) return;
+            [orderedCandidats[index], orderedCandidats[index + 1]] = [orderedCandidats[index + 1], orderedCandidats[index]];
+            orderedCandidats.forEach((c, i) => c.ordre = i);
+            ordreModifie = true;
+            renderManageCandidats(orderedCandidats);
+        }
+
+        async function saveOrdre() {
+            const btn = document.getElementById('btn-save-ordre');
+            btn.disabled = true;
+            btn.textContent = 'Sauvegarde...';
+            try {
+                const ordres = orderedCandidats.map((c, i) => ({ id: c.id, ordre: i }));
+                const res = await fetch('/.netlify/functions/manage-candidats', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ordres })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                ordreModifie = false;
+                btn.classList.add('hidden');
+                alert('Ordre des candidats sauvegardé avec succès !');
+                fetchAdminData(false);
+            } catch (err) {
+                alert('Erreur : ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '💾 Sauvegarder l\'ordre';
+            }
         }
 
         async function fetchAdminData(silent = false) {
