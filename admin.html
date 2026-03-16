@@ -109,6 +109,10 @@
                     class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                     Candidats & Couleurs
                 </button>
+                <button id="nav-statistiques"
+                    class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    📊 Statistiques
+                </button>
             </nav>
         </div>
 
@@ -363,6 +367,110 @@
             </div>
         </div> <!-- Fin ONGLET CANDIDATS -->
 
+        <!-- ONGLET STATISTIQUES -->
+        <div id="tab-statistiques" class="hidden">
+
+            <!-- En-tête -->
+            <div class="mb-6 border-b border-gray-100 pb-4">
+                <h2 class="text-xl font-bold text-gray-800">🎯 Stratégie entre les deux tours</h2>
+                <p class="text-sm text-gray-500 mt-1">Analyse stratégique des résultats du T1 pour orienter la campagne du second tour</p>
+            </div>
+
+            <!-- 1. Tableau de bord stratégique -->
+            <div class="grid grid-cols-2 gap-4 mb-8 md:grid-cols-4 lg:gap-6">
+                <div class="p-5 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl border border-orange-200 flex flex-col justify-center">
+                    <h3 class="text-xs font-semibold text-orange-600 mb-1 uppercase tracking-wider">Voix des éliminés</h3>
+                    <p class="text-3xl font-bold text-orange-900" id="strat-voix-elimines">-</p>
+                    <p class="text-xs text-orange-600 mt-0.5" id="strat-voix-elimines-pct">-</p>
+                </div>
+                <div class="p-5 bg-gradient-to-br from-sky-50 to-sky-100 rounded-2xl border border-sky-200 flex flex-col justify-center">
+                    <h3 class="text-xs font-semibold text-sky-600 mb-1 uppercase tracking-wider">Abstentionnistes</h3>
+                    <p class="text-3xl font-bold text-sky-900" id="strat-abstentionnistes">-</p>
+                    <p class="text-xs text-sky-600 mt-0.5" id="strat-abstentionnistes-pct">-</p>
+                </div>
+                <div class="p-5 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl border border-emerald-200 flex flex-col justify-center">
+                    <h3 class="text-xs font-semibold text-emerald-600 mb-1 uppercase tracking-wider">Réserve totale</h3>
+                    <p class="text-3xl font-bold text-emerald-900" id="strat-reserve-totale">-</p>
+                    <p class="text-xs text-emerald-600 mt-0.5">éliminés + abstentionnistes</p>
+                </div>
+                <div class="p-5 bg-gradient-to-br from-rose-50 to-rose-100 rounded-2xl border border-rose-200 flex flex-col justify-center">
+                    <h3 class="text-xs font-semibold text-rose-600 mb-1 uppercase tracking-wider">Écart 1er ↔ 2ème</h3>
+                    <p class="text-3xl font-bold text-rose-900" id="strat-ecart-1-2">-</p>
+                    <p class="text-xs text-rose-600 mt-0.5" id="strat-ecart-1-2-detail">-</p>
+                </div>
+            </div>
+
+            <!-- 2. Performance par Bureau (tableau croisé) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                    <h3 class="text-lg font-bold text-slate-800">📊 Performance par bureau — Tableau croisé</h3>
+                    <p class="text-xs text-slate-500 mt-1">Résultats de chaque candidat qualifié par bureau · <span class="text-green-600 font-semibold">vert = point fort</span> · <span class="text-red-600 font-semibold">rouge = point faible</span></p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead id="strat-perf-thead">
+                        </thead>
+                        <tbody id="strat-perf-body" class="divide-y divide-gray-100">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. Réserves de voix par bureau -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-white">
+                    <h3 class="text-lg font-bold text-slate-800">🗺️ Réserves de voix par bureau — Priorité terrain</h3>
+                    <p class="text-xs text-slate-500 mt-1">Trié par potentiel de gain décroissant → bureaux à cibler en priorité pour la campagne</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr>
+                                <th class="px-5 py-3 font-semibold text-gray-500 border-b border-gray-100 bg-white">Bureau</th>
+                                <th class="px-5 py-3 font-semibold text-gray-500 border-b border-gray-100 bg-white text-right">Voix éliminés</th>
+                                <th class="px-5 py-3 font-semibold text-gray-500 border-b border-gray-100 bg-white text-right">Abstentionnistes</th>
+                                <th class="px-5 py-3 font-semibold text-gray-500 border-b border-gray-100 bg-white text-right">Potentiel total</th>
+                                <th class="px-5 py-3 font-semibold text-gray-500 border-b border-gray-100 bg-white text-center">Priorité</th>
+                            </tr>
+                        </thead>
+                        <tbody id="strat-reserves-body" class="divide-y divide-gray-100">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 4. Forces & Faiblesses par candidat qualifié -->
+            <div id="strat-forces-faiblesses" class="space-y-6 mb-8">
+                <!-- Généré dynamiquement -->
+            </div>
+
+            <!-- 5. Fiche Résumé — Enjeux du Second Tour -->
+            <!-- 5bis. Explorer un candidat (interactif) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-brand-50 to-white flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">🔍 Explorer un candidat</h3>
+                        <p class="text-xs text-slate-500 mt-1">Sélectionnez un candidat pour voir sa performance détaillée bureau par bureau</p>
+                    </div>
+                    <select id="strat-candidat-select" class="p-2.5 text-sm border-gray-300 rounded-lg shadow-sm bg-white focus:ring-brand-500 focus:border-brand-500 min-w-[220px] font-medium">
+                        <option value="" disabled selected>Choisir un candidat...</option>
+                    </select>
+                </div>
+                <div id="strat-candidat-explorer" class="p-6">
+                    <p class="text-slate-400 italic text-center py-8">← Sélectionnez un candidat pour afficher son analyse</p>
+                </div>
+            </div>
+
+            <!-- 6. Fiche Résumé -->
+            <div class="bg-gradient-to-br from-brand-50 via-white to-brand-50 rounded-2xl shadow-sm border border-brand-200 p-6 mb-8">
+                <h3 class="text-lg font-bold text-brand-900 mb-4">📋 Fiche résumé — Enjeux du Second Tour</h3>
+                <div id="strat-fiche-t2" class="space-y-4 text-sm text-slate-700">
+                    <p class="text-slate-400 italic">Chargement...</p>
+                </div>
+            </div>
+
+        </div> <!-- Fin ONGLET STATISTIQUES -->
+
     </div>
 
     <script>
@@ -376,9 +484,11 @@
         const navResultats = document.getElementById('nav-resultats');
         const navBureaux = document.getElementById('nav-bureaux');
         const navCandidats = document.getElementById('nav-candidats');
+        const navStatistiques = document.getElementById('nav-statistiques');
         const tabResultats = document.getElementById('tab-resultats');
         const tabBureaux = document.getElementById('tab-bureaux');
         const tabCandidats = document.getElementById('tab-candidats');
+        const tabStatistiques = document.getElementById('tab-statistiques');
 
         // Manage Bureaux & Candidats
         const addBureauForm = document.getElementById('add-bureau-form');
@@ -401,15 +511,18 @@
             navResultats.className = tab === 'resultats' ? activeNavClass : inactiveNavClass;
             navBureaux.className = tab === 'bureaux' ? activeNavClass : inactiveNavClass;
             navCandidats.className = tab === 'candidats' ? activeNavClass : inactiveNavClass;
+            navStatistiques.className = tab === 'statistiques' ? activeNavClass : inactiveNavClass;
 
             tabResultats.classList.toggle('hidden', tab !== 'resultats');
             tabBureaux.classList.toggle('hidden', tab !== 'bureaux');
             tabCandidats.classList.toggle('hidden', tab !== 'candidats');
+            tabStatistiques.classList.toggle('hidden', tab !== 'statistiques');
         }
 
         navResultats.addEventListener('click', () => switchTab('resultats'));
         navBureaux.addEventListener('click', () => switchTab('bureaux'));
         navCandidats.addEventListener('click', () => switchTab('candidats'));
+        navStatistiques.addEventListener('click', () => switchTab('statistiques'));
 
         function renderBureaux(bureaux) {
             allBureaux = bureaux;
@@ -676,6 +789,9 @@
             // Gérer le DOM des candidats dans l'onglet Manage Candidats
             // Attention : Toujours utiliser les stats globales pour la vraie liste des candidats enregistrés !
             renderManageCandidats(statsData.global.candidats);
+
+            // Mettre à jour l'onglet Statistiques
+            renderStatistiques(statsData);
         }
 
         let orderedCandidats = []; // Liste locale pour gérer l'ordre
@@ -766,6 +882,406 @@
                 btn.textContent = '💾 Sauvegarder l\'ordre';
             }
         }
+
+        function renderStatistiques(statsData) {
+            const global = statsData.global;
+            const inscrits = global.totalInscritsGlobals || 0;
+            const votants = global.totalVotants || 0;
+            const blancs = global.totalBlancs || 0;
+            const nuls = global.totalNuls || 0;
+            const exprimes = votants - blancs - nuls;
+            if (!global.candidats || global.candidats.length === 0) return;
+
+            const sorted = [...global.candidats].sort((a, b) => b.voix - a.voix);
+            const abstentionnistes = inscrits - votants;
+
+            // Catégoriser les candidats
+            const categorize = (c) => {
+                const pE = exprimes > 0 ? (c.voix / exprimes) * 100 : 0;
+                const pI = inscrits > 0 ? (c.voix / inscrits) * 100 : 0;
+                const eluT1 = pE > 50 && pI > 25;
+                const qualifie = !eluT1 && pI > 10;
+                return { ...c, pctExprimes: pE, pctInscrits: pI, eluT1, qualifie, elimine: !eluT1 && !qualifie };
+            };
+            const candidatsCat = sorted.map(categorize);
+            const qualifies = candidatsCat.filter(c => c.qualifie || c.eluT1);
+            const elimines = candidatsCat.filter(c => c.elimine);
+            const voixElimines = elimines.reduce((acc, c) => acc + c.voix, 0);
+
+            // --- 1. KPIs Stratégiques ---
+            document.getElementById('strat-voix-elimines').textContent = voixElimines.toLocaleString('fr-FR');
+            document.getElementById('strat-voix-elimines-pct').textContent = exprimes > 0 ? ((voixElimines / exprimes) * 100).toFixed(1) + '% des exprimés' : '-';
+            document.getElementById('strat-abstentionnistes').textContent = abstentionnistes.toLocaleString('fr-FR');
+            document.getElementById('strat-abstentionnistes-pct').textContent = inscrits > 0 ? ((abstentionnistes / inscrits) * 100).toFixed(1) + '% des inscrits' : '-';
+            document.getElementById('strat-reserve-totale').textContent = (voixElimines + abstentionnistes).toLocaleString('fr-FR');
+
+            if (sorted.length >= 2) {
+                const ecart = sorted[0].voix - sorted[1].voix;
+                document.getElementById('strat-ecart-1-2').textContent = ecart.toLocaleString('fr-FR') + ' voix';
+                document.getElementById('strat-ecart-1-2-detail').textContent = sorted[0].nom.substring(0, 15) + ' vs ' + sorted[1].nom.substring(0, 15);
+            }
+
+            // --- Données par bureau ---
+            const bureauxVotes = allBureaux.filter(b => b.a_vote && statsData.parBureau[b.id]);
+            const bureauxData = bureauxVotes.map(b => {
+                const stat = statsData.parBureau[b.id];
+                const insc = b.inscrits || 0;
+                const vot = stat.totalVotants || 0;
+                const bl = stat.totalBlancs || 0;
+                const nu = stat.totalNuls || 0;
+                const expr = vot - bl - nu;
+                const candData = {};
+                (stat.candidats || []).forEach(c => { candData[c.id] = c; });
+                const voixElimBureau = elimines.reduce((acc, c) => acc + (candData[c.id] ? candData[c.id].voix : 0), 0);
+                return {
+                    id: b.id, nom: (b.numero ? b.numero + ' - ' : '') + b.nom,
+                    inscrits: insc, votants: vot, exprimes: expr,
+                    abstentionnistes: insc - vot, voixElimines: voixElimBureau,
+                    potentiel: voixElimBureau + (insc - vot), candData
+                };
+            });
+
+            // --- 2. Performance par bureau (tableau croisé) ---
+            const thead = document.getElementById('strat-perf-thead');
+            const tbody = document.getElementById('strat-perf-body');
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            // Calculer les moyennes par candidat qualifié
+            const moyennes = {};
+            qualifies.forEach(c => {
+                const pcts = bureauxData.map(b => {
+                    const cd = b.candData[c.id];
+                    return b.exprimes > 0 && cd ? (cd.voix / b.exprimes) * 100 : 0;
+                });
+                moyennes[c.id] = pcts.length > 0 ? pcts.reduce((a, b) => a + b, 0) / pcts.length : 0;
+            });
+
+            // Header
+            let headerHtml = '<tr><th class="px-5 py-3 font-semibold text-gray-500 border-b border-gray-100 bg-white sticky left-0 z-10">Bureau</th>';
+            qualifies.forEach(c => {
+                headerHtml += `<th class="px-4 py-3 font-semibold border-b border-gray-100 bg-white text-center min-w-[120px]">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full shrink-0" style="background:${c.couleur}"></span>
+                        <span class="truncate">${c.nom}</span>
+                    </div>
+                </th>`;
+            });
+            headerHtml += '<th class="px-4 py-3 font-semibold text-gray-500 border-b border-gray-100 bg-white text-right">Abstention</th></tr>';
+            thead.innerHTML = headerHtml;
+
+            // Rows — trié par bureau numéro
+            const bureauxSorted = [...bureauxData].sort((a, b) => {
+                const nA = parseInt(a.nom) || 0, nB = parseInt(b.nom) || 0;
+                return nA - nB;
+            });
+
+            bureauxSorted.forEach(b => {
+                let rowHtml = `<td class="px-5 py-3 font-medium text-gray-900 whitespace-nowrap sticky left-0 bg-white z-10">${b.nom}</td>`;
+                qualifies.forEach(c => {
+                    const cd = b.candData[c.id];
+                    const voix = cd ? cd.voix : 0;
+                    const pct = b.exprimes > 0 ? (voix / b.exprimes) * 100 : 0;
+                    const moy = moyennes[c.id];
+                    const diff = pct - moy;
+                    let cellBg = '', cellColor = 'text-slate-700';
+                    if (diff >= 5) { cellBg = 'bg-green-100'; cellColor = 'text-green-800 font-bold'; }
+                    else if (diff >= 2) { cellBg = 'bg-green-50'; cellColor = 'text-green-700'; }
+                    else if (diff <= -5) { cellBg = 'bg-red-100'; cellColor = 'text-red-800 font-bold'; }
+                    else if (diff <= -2) { cellBg = 'bg-red-50'; cellColor = 'text-red-700'; }
+                    rowHtml += `<td class="px-4 py-3 text-center ${cellBg} ${cellColor}">${pct.toFixed(1)}% <span class="text-xs opacity-60">(${voix})</span></td>`;
+                });
+                const absPct = b.inscrits > 0 ? ((b.abstentionnistes / b.inscrits) * 100).toFixed(1) : '0.0';
+                rowHtml += `<td class="px-4 py-3 text-right text-sm text-slate-500">${absPct}%</td>`;
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50/50 transition-colors';
+                tr.innerHTML = rowHtml;
+                tbody.appendChild(tr);
+            });
+
+            // Ligne moyenne
+            let moyRow = '<td class="px-5 py-3 font-bold text-slate-700 sticky left-0 bg-slate-50 z-10">📊 Moyenne</td>';
+            qualifies.forEach(c => {
+                moyRow += `<td class="px-4 py-3 text-center font-bold bg-slate-50" style="color:${c.couleur}">${moyennes[c.id].toFixed(1)}%</td>`;
+            });
+            const avgAbs = bureauxData.length > 0 ? (bureauxData.reduce((a, b) => a + (b.inscrits > 0 ? (b.abstentionnistes / b.inscrits) * 100 : 0), 0) / bureauxData.length).toFixed(1) : '0.0';
+            moyRow += `<td class="px-4 py-3 text-right font-bold bg-slate-50 text-slate-500">${avgAbs}%</td>`;
+            const trMoy = document.createElement('tr');
+            trMoy.innerHTML = moyRow;
+            tbody.appendChild(trMoy);
+
+            // --- 3. Réserves de voix par bureau ---
+            const reservesBody = document.getElementById('strat-reserves-body');
+            reservesBody.innerHTML = '';
+            const reservesSorted = [...bureauxData].sort((a, b) => b.potentiel - a.potentiel);
+            const maxPotentiel = reservesSorted.length > 0 ? reservesSorted[0].potentiel : 1;
+
+            reservesSorted.forEach((b, i) => {
+                let priorite = '', prioClass = '';
+                if (i < 3) { priorite = '🔴 Critique'; prioClass = 'text-red-700 font-bold'; }
+                else if (i < Math.ceil(reservesSorted.length * 0.4)) { priorite = '🟠 Haute'; prioClass = 'text-orange-600 font-semibold'; }
+                else { priorite = '🟢 Normale'; prioClass = 'text-green-600'; }
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 transition-colors' + (i < 3 ? ' bg-red-50/30' : '');
+                tr.innerHTML = `
+                    <td class="px-5 py-3 font-medium text-gray-900">${b.nom}</td>
+                    <td class="px-5 py-3 text-right text-orange-700 font-semibold">${b.voixElimines.toLocaleString('fr-FR')}</td>
+                    <td class="px-5 py-3 text-right text-sky-700 font-semibold">${b.abstentionnistes.toLocaleString('fr-FR')}</td>
+                    <td class="px-5 py-3 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <div class="w-20 bg-gray-200 rounded-full h-1.5 hidden md:block"><div class="bg-emerald-500 h-1.5 rounded-full" style="width:${(b.potentiel / maxPotentiel * 100).toFixed(0)}%"></div></div>
+                            <span class="font-bold text-emerald-800">${b.potentiel.toLocaleString('fr-FR')}</span>
+                        </div>
+                    </td>
+                    <td class="px-5 py-3 text-center ${prioClass}">${priorite}</td>
+                `;
+                reservesBody.appendChild(tr);
+            });
+
+            // --- 4. Forces & Faiblesses par candidat ---
+            const ffContainer = document.getElementById('strat-forces-faiblesses');
+            ffContainer.innerHTML = '';
+
+            qualifies.forEach(c => {
+                const bureauxPerf = bureauxData.map(b => {
+                    const cd = b.candData[c.id];
+                    const voix = cd ? cd.voix : 0;
+                    const pct = b.exprimes > 0 ? (voix / b.exprimes) * 100 : 0;
+                    return { nom: b.nom, voix, pct, inscrits: b.inscrits };
+                }).sort((a, b) => b.pct - a.pct);
+
+                const top3 = bureauxPerf.slice(0, 3);
+                const bottom3 = bureauxPerf.slice(-3).reverse();
+                const moy = moyennes[c.id];
+                const leader = sorted[0];
+                const gapVsLeader = c.id === leader.id ? 0 : leader.voix - c.voix;
+
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden';
+                card.innerHTML = `
+                    <div class="px-6 py-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-2" style="background: linear-gradient(90deg, ${c.couleur}15, transparent)">
+                        <div class="flex items-center gap-3">
+                            <span class="w-5 h-5 rounded-full shrink-0 border-2" style="background:${c.couleur}; border-color:${c.couleur}"></span>
+                            <h3 class="text-lg font-bold text-slate-800">📈 ${c.nom}</h3>
+                            <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${c.eluT1 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">${c.eluT1 ? 'Élu T1' : 'Qualifié T2'}</span>
+                        </div>
+                        <div class="flex gap-4 text-sm">
+                            <span class="text-slate-500">Moy: <strong style="color:${c.couleur}">${moy.toFixed(1)}%</strong></span>
+                            ${gapVsLeader > 0 ? `<span class="text-rose-600">Écart vs 1er: <strong>-${gapVsLeader.toLocaleString('fr-FR')} voix</strong></span>` : '<span class="text-green-600 font-bold">🏆 En tête</span>'}
+                        </div>
+                    </div>
+                    <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-semibold text-green-700 mb-2 text-sm">✅ 3 meilleurs bureaux</h4>
+                            <div class="space-y-2">
+                                ${top3.map((b, i) => `<div class="flex justify-between items-center text-sm bg-green-50 rounded-lg px-3 py-2">
+                                    <span class="font-medium">${['🥇','🥈','🥉'][i]} ${b.nom}</span>
+                                    <span class="font-bold text-green-800">${b.pct.toFixed(1)}% <span class="text-xs text-green-600">(${b.voix} voix)</span></span>
+                                </div>`).join('')}
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-red-700 mb-2 text-sm">⚠️ 3 bureaux les plus faibles</h4>
+                            <div class="space-y-2">
+                                ${bottom3.map(b => `<div class="flex justify-between items-center text-sm bg-red-50 rounded-lg px-3 py-2">
+                                    <span class="font-medium">${b.nom}</span>
+                                    <span class="font-bold text-red-800">${b.pct.toFixed(1)}% <span class="text-xs text-red-600">(${b.voix} voix)</span></span>
+                                </div>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                ffContainer.appendChild(card);
+            });
+
+            // --- 5. Fiche Résumé ---
+            const fiche = document.getElementById('strat-fiche-t2');
+            fiche.innerHTML = '';
+            const elusT1 = candidatsCat.filter(c => c.eluT1);
+            let html = '';
+
+            if (elusT1.length > 0) {
+                html += `<div class="bg-green-50 rounded-xl p-4 border border-green-200">
+                    <h4 class="font-bold text-green-800 mb-2">✅ Élu(s) dès le 1er tour</h4>
+                    <ul class="list-disc pl-5 space-y-1">${elusT1.map(c => `<li><strong>${c.nom}</strong> — ${c.voix.toLocaleString('fr-FR')} voix (${c.pctExprimes.toFixed(2)}% des exprimés)</li>`).join('')}</ul>
+                </div>`;
+            } else {
+                html += `<div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                    <h4 class="font-bold text-blue-800 mb-2">🔄 Pas d'élu au 1er tour — Second tour nécessaire</h4>
+                </div>`;
+            }
+
+            // Report potentiel
+            html += `<div class="bg-orange-50 rounded-xl p-4 border border-orange-200">
+                <h4 class="font-bold text-orange-800 mb-2">🔄 Report potentiel des voix</h4>
+                <p><strong>${voixElimines.toLocaleString('fr-FR')} voix</strong> des candidats éliminés sont en jeu pour le second tour :</p>
+                <ul class="list-disc pl-5 mt-2 space-y-1">${elimines.map(c => `<li>${c.nom} : <strong>${c.voix.toLocaleString('fr-FR')}</strong> voix (${c.pctExprimes.toFixed(1)}% des exprimés)</li>`).join('')}</ul>
+            </div>`;
+
+            // Taux de mobilisation nécessaire
+            if (sorted.length >= 2) {
+                const leader = sorted[0];
+                const challenger = sorted[1];
+                const ecart = leader.voix - challenger.voix;
+                const pctReserve = voixElimines > 0 ? ((ecart / voixElimines) * 100).toFixed(1) : 'N/A';
+                html += `<div class="bg-rose-50 rounded-xl p-4 border border-rose-200">
+                    <h4 class="font-bold text-rose-800 mb-2">📐 Pour renverser le résultat</h4>
+                    <p>Écart à combler : <strong>${ecart.toLocaleString('fr-FR')} voix</strong> entre ${leader.nom} et ${challenger.nom}</p>
+                    <p class="mt-1">Cela représente <strong>${pctReserve}%</strong> des voix des éliminés disponibles.</p>
+                </div>`;
+            }
+
+            // Top 3 bureaux à cibler
+            const top3Bureaux = reservesSorted.slice(0, 3);
+            if (top3Bureaux.length > 0) {
+                const totalTopPotentiel = top3Bureaux.reduce((acc, b) => acc + b.potentiel, 0);
+                const totalPotentiel = reservesSorted.reduce((acc, b) => acc + b.potentiel, 0);
+                const pctTopPotentiel = totalPotentiel > 0 ? ((totalTopPotentiel / totalPotentiel) * 100).toFixed(0) : 0;
+                html += `<div class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+                    <h4 class="font-bold text-emerald-800 mb-2">🎯 Recommandation : bureaux prioritaires</h4>
+                    <p><strong>${pctTopPotentiel}%</strong> du potentiel de gain se concentre sur ces 3 bureaux :</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">${top3Bureaux.map(b => `<li><strong>${b.nom}</strong> — ${b.potentiel.toLocaleString('fr-FR')} voix mobilisables (${b.voixElimines} éliminés + ${b.abstentionnistes} abstentionnistes)</li>`).join('')}</ul>
+                </div>`;
+            }
+
+            fiche.innerHTML = html;
+
+            // --- 6. Explorer un candidat (interactif) ---
+            const selectEl = document.getElementById('strat-candidat-select');
+            selectEl.innerHTML = '<option value="" disabled selected>Choisir un candidat...</option>';
+            candidatsCat.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                const badge = c.eluT1 ? ' ✅ Élu T1' : c.qualifie ? ' 🎯 Qualifié T2' : ' ❌ Éliminé';
+                opt.textContent = c.nom + badge;
+                selectEl.appendChild(opt);
+            });
+
+            // Stocker les données pour le handler
+            window._stratData = { candidatsCat, bureauxData, elimines, qualifies, exprimes, inscrits };
+
+            // Rattacher le listener (une seule fois)
+            if (!selectEl._hasListener) {
+                selectEl.addEventListener('change', renderCandidatExplorer);
+                selectEl._hasListener = true;
+            }
+        }
+
+        function renderCandidatExplorer() {
+            const selectEl = document.getElementById('strat-candidat-select');
+            const container = document.getElementById('strat-candidat-explorer');
+            const selectedId = selectEl.value;
+            if (!selectedId || !window._stratData) return;
+
+            const { candidatsCat, bureauxData, exprimes, inscrits } = window._stratData;
+            const candidat = candidatsCat.find(c => c.id === selectedId);
+            if (!candidat) return;
+
+            // Performance par bureau
+            const bureauxPerf = bureauxData.map(b => {
+                const cd = b.candData[candidat.id];
+                const voix = cd ? cd.voix : 0;
+                const pct = b.exprimes > 0 ? (voix / b.exprimes) * 100 : 0;
+                return { nom: b.nom, voix, pct, inscrits: b.inscrits, votants: b.votants, exprimes: b.exprimes, abstentionnistes: b.abstentionnistes };
+            });
+
+            const maxPct = Math.max(...bureauxPerf.map(b => b.pct), 1);
+            const avgPct = bureauxPerf.length > 0 ? bureauxPerf.reduce((a, b) => a + b.pct, 0) / bureauxPerf.length : 0;
+
+            // Tri décroissant par %
+            const sortedDesc = [...bureauxPerf].sort((a, b) => b.pct - a.pct);
+            const sortedAsc = [...bureauxPerf].sort((a, b) => a.pct - b.pct);
+
+            let html = '';
+
+            // Résumé candidat
+            const badge = candidat.eluT1 ? '<span class="px-2 py-0.5 text-xs rounded-full font-bold bg-green-100 text-green-800">✅ Élu T1</span>'
+                : candidat.qualifie ? '<span class="px-2 py-0.5 text-xs rounded-full font-bold bg-blue-100 text-blue-800">🎯 Qualifié T2</span>'
+                : '<span class="px-2 py-0.5 text-xs rounded-full font-bold bg-gray-100 text-gray-500">❌ Éliminé</span>';
+
+            html += `<div class="flex flex-wrap items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                <span class="w-5 h-5 rounded-full" style="background:${candidat.couleur}"></span>
+                <span class="text-xl font-bold text-slate-800">${candidat.nom}</span>
+                ${badge}
+                <span class="text-sm text-slate-500 ml-auto">${candidat.voix.toLocaleString('fr-FR')} voix · ${candidat.pctExprimes.toFixed(2)}% des exprimés · ${candidat.pctInscrits.toFixed(2)}% des inscrits</span>
+            </div>`;
+
+            // Top 5 meilleurs
+            html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">`;
+            html += `<div>
+                <h4 class="font-bold text-green-700 mb-3 flex items-center gap-2">🏆 Meilleurs bureaux <span class="text-xs font-normal text-slate-400">(% des exprimés)</span></h4>
+                <div class="space-y-2">`;
+            sortedDesc.slice(0, 5).forEach((b, i) => {
+                const barW = maxPct > 0 ? (b.pct / maxPct * 100) : 0;
+                html += `<div class="flex items-center gap-3">
+                    <span class="text-lg w-6 text-center">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</span>
+                    <div class="flex-1">
+                        <div class="flex justify-between text-sm mb-0.5">
+                            <span class="font-medium text-slate-700">${b.nom}</span>
+                            <span class="font-bold text-green-700">${b.pct.toFixed(1)}% <span class="text-xs text-slate-400">(${b.voix}v)</span></span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-2">
+                            <div class="h-2 rounded-full transition-all duration-700" style="width:${barW.toFixed(0)}%;background:${candidat.couleur}"></div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            html += `</div></div>`;
+
+            // Bottom 5 pires
+            html += `<div>
+                <h4 class="font-bold text-red-700 mb-3 flex items-center gap-2">⚠️ Bureaux les plus faibles <span class="text-xs font-normal text-slate-400">(% des exprimés)</span></h4>
+                <div class="space-y-2">`;
+            sortedAsc.slice(0, 5).forEach(b => {
+                const barW = maxPct > 0 ? (b.pct / maxPct * 100) : 0;
+                html += `<div class="flex items-center gap-3">
+                    <span class="text-lg w-6 text-center">🔻</span>
+                    <div class="flex-1">
+                        <div class="flex justify-between text-sm mb-0.5">
+                            <span class="font-medium text-slate-700">${b.nom}</span>
+                            <span class="font-bold text-red-700">${b.pct.toFixed(1)}% <span class="text-xs text-slate-400">(${b.voix}v)</span></span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-2">
+                            <div class="h-2 rounded-full transition-all duration-700" style="width:${barW.toFixed(0)}%;background:#ef4444"></div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            html += `</div></div></div>`;
+
+            // Classement complet
+            html += `<div class="border-t border-gray-100 pt-4">
+                <h4 class="font-bold text-slate-700 mb-3">📊 Tous les bureaux — triés du meilleur au pire</h4>
+                <div class="space-y-1.5">`;
+            sortedDesc.forEach(b => {
+                const barW = maxPct > 0 ? (b.pct / maxPct * 100) : 0;
+                const isAbove = b.pct >= avgPct;
+                const barColor = isAbove ? candidat.couleur : '#94a3b8';
+                const textClass = isAbove ? 'text-slate-800' : 'text-slate-400';
+                html += `<div class="flex items-center gap-2 text-sm">
+                    <span class="w-32 md:w-40 truncate font-medium ${textClass}">${b.nom}</span>
+                    <div class="flex-1 bg-gray-100 rounded-full h-2.5 relative">
+                        <div class="h-2.5 rounded-full transition-all duration-500" style="width:${barW.toFixed(0)}%;background:${barColor}"></div>
+                    </div>
+                    <span class="w-20 text-right font-bold ${isAbove ? '' : 'text-slate-400'}" style="${isAbove ? 'color:'+candidat.couleur : ''}">${b.pct.toFixed(1)}%</span>
+                    <span class="w-12 text-right text-xs text-slate-400">${b.voix}v</span>
+                </div>`;
+            });
+
+            // Ligne moyenne
+            html += `</div>
+                <div class="mt-3 pt-3 border-t border-dashed border-gray-200 flex items-center gap-2 text-sm">
+                    <span class="w-32 md:w-40 font-bold text-slate-600">📊 Moyenne</span>
+                    <div class="flex-1"></div>
+                    <span class="w-20 text-right font-bold" style="color:${candidat.couleur}">${avgPct.toFixed(1)}%</span>
+                    <span class="w-12"></span>
+                </div>
+            </div>`;
+
+            container.innerHTML = html;
+        }
+
 
         async function fetchAdminData(silent = false) {
             if (!silent) {
